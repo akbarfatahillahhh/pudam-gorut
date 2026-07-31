@@ -1,0 +1,8 @@
+<!-- <VirtualHost *:8888>
+    DocumentRoot "/Applications/MAMP/htdocs/project/public"
+    ServerName project.test
+    <Directory "/Applications/MAMP/htdocs/project/public">
+        AllowOverride All
+        Require all granted
+    </Directory>
+</VirtualHost> -->

@@ -14,31 +14,32 @@
                 </button>
             </div>
         </div>
+        <div class="mb-2">
+            <button class="btn btn-sm btn-danger" id="exportPdf">
+                <i class="fa fa-file-pdf"></i>
+                PDF
+            </button>
+            <button class="btn btn-sm btn-success" id="exportExcel">
+                <i class="fa fa-file-excel"></i>
+                Excel
+            </button>
+        </div>
         <div class="table-responsive">
-            <table id="table" class="table table-sm table-bordered border-dark text-nowrap mb-0 align-middle">
+            <table id="table-jabatan" class="table table-sm table-hover table-striped table-bordered border-dark text-nowrap mb-0 align-middle w-100 pt-3">
                 <thead class="text-black fs-4">
                     <tr>
-                        <th class="text-center align-middle">
+                        <th class="text-center align-middle border-top border-dark">
                             <h6 class="fw-semibold mb-0">#</h6>
                         </th>
-                        <th class="text-center align-middle">
-                            <h6 class="fw-semibold mb-0">Perkiraan</h6>
+                        <th class="text-center align-middle border-top border-dark">
+                            <h6 class="fw-semibold mb-0">JABATAN</h6>
                         </th>
-                        <th class="text-center align-middle">
-                            <h6 class="fw-semibold mb-0">Nomor</h6>
-                        </th>
-                        <th class="text-center align-middle">
-                            <h6 class="fw-semibold mb-0">Normal</h6>
-                        </th>
-                        <th class="text-center align-middle">
-                            <h6 class="fw-semibold mb-0">Status</h6>
-                        </th>
-                        <th class="text-center align-middle">
+                        <th class="text-center align-middle border-top border-dark">
                             <h6 class="fw-semibold mb-0">#</h6>
                         </th>
                     </tr>
                 </thead>
-                <tbody class="text-black" id="data-perkiraan"></tbody>
+                <tbody class="text-black"></tbody>
             </table>
         </div>
     </div>
@@ -50,62 +51,129 @@
 <?= $this->section('script') ?>
 
 <script>
-    $(function() {
-        getDataPerkiraan();
-    });
-
-    function getDataPerkiraan() {
+    $('#exportPdf').click(function(e) {
+        e.preventDefault();
         $.ajax({
             type: "get",
-            url: "<?= base_url('Master/Perkiraan/data') ?>",
+            url: "<?= base_url('Master/Jabatan/modal_export_pdf') ?>",
             dataType: "json",
             success: function(response) {
-                let html = '';
-                let no = 1;
-                let group = '';
-                $.each(response, function(key, value) {
-                    if (group != value.GROUP_PERKIRAAN) {
-                        group = value.GROUP_PERKIRAAN;
-                        html += `
-                            <tr class="fw-bold">
-                                <td class="text-center align-middle bg-dark text-white" colspan="6">${value.GROUP_PERKIRAAN}</td>
-                            </tr>
-                        `
-                    }
-                    html += `
-                        <tr>
-                            <td class="text-center align-middle">${no++}</td>
-                            <td class="text-center align-middle">${value.GROUP_PERKIRAAN}</td>
-                            <td class="text-center align-middle">${value.NOMOR}</td>
-                            <td class="text-center align-middle">${value.NORMAL}</td>
-                            <td class="text-center align-middle">${value.STATUS}</td>
-                            <td class="text-center align-middle">
-                                <div class="dropdown">
-                                    <button class="btn btn-sm" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                        <i class="fa fa-ellipsis-v text-black"></i>
-                                    </button>
-                                    <ul class="dropdown-menu py-0">
-                                        <li>
-                                            <a class="dropdown-item text-black" href="#">
-                                                <i class="fa-solid fa-pen-to-square text-warning"></i>
-                                                Edit
-                                            </a>
-                                        </li>
-                                        <li>
-                                            <a class="dropdown-item text-black" href="#">
-                                                <i class="fa-solid fa-trash text-danger"></i>
-                                                Hapus
-                                            </a>
-                                        </li>
-                                    </ul>
-                                </div>
-                            </td>
-                        </tr>
-                    `
-                })
-                $('#data-perkiraan').html(html);
+                $('.modal-place').html(``).html(response.html);
+                $('.modal-place #modal').modal('show');
             }
         });
+    });
+</script>
+
+<script>
+    $('#table-jabatan').DataTable({
+        processing: true,
+        serverSide: true,
+        ajax: {
+            url: "<?= base_url('Master/Jabatan/data') ?>",
+            type: "post",
+        },
+        columns: [{
+                render: function(data, type, row, meta) {
+                    return meta.row + meta.settings._iDisplayStart + 1;
+                },
+                class: "text-center align-middle py-1 text-dark",
+                width: "3%",
+                searchable: false
+            },
+            {
+                data: "JABATAN",
+                class: "align-middle py-1 text-dark",
+            },
+            {
+                data: "action",
+                class: "text-center align-middle py-1 text-dark",
+                width: "3%",
+                searchable: false
+            },
+        ]
+    });
+
+    async function edit(id) {
+        $.ajax({
+            type: "get",
+            url: "<?= base_url('Master/Jabatan/edit') ?>",
+            data: {
+                id: id
+            },
+            dataType: "json",
+            beforeSend: function() {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Loading...',
+                    html: 'Sedang Diproses',
+                    showConfirmButton: false,
+                    allowOutsideClick: false,
+                    onBeforeOpen: () => {
+                        Swal.showLoading()
+                    }
+                });
+            },
+            complete: function() {
+                Swal.close();
+            },
+            success: function(response) {
+                $('.modal-place').html("").html(response.html);
+                $('.modal-place #modal').modal('show');
+            }
+        });
+    }
+
+    async function hapus(id) {
+        Swal.fire({
+            title: 'Apakah anda yakin?',
+            text: "Anda tidak akan bisa mengembalikan data ini!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Ya, Hapus!',
+            cancelButtonText: 'Batal'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                $.ajax({
+                    type: "POST",
+                    url: "<?= base_url('Master/Jabatan/master') ?>",
+                    data: {
+                        ID: id,
+                    },
+                    dataType: "json",
+                    beforeSend: function() {
+                        Swal.fire({
+                            icon: 'warning',
+                            title: 'Loading...',
+                            html: 'Sedang Diproses',
+                            showConfirmButton: false,
+                            allowOutsideClick: false,
+                            onBeforeOpen: () => {
+                                Swal.showLoading()
+                            }
+                        });
+                    },
+                    complete: function() {
+                        Swal.close();
+                    },
+                    success: function(response) {
+                        if (response.status == "success") {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Berhasil',
+                                text: response.message,
+                                showConfirmButton: true,
+                                timer: 1500
+                            }).then(() => {
+                                location.reload();
+                            });
+                        }
+                    }
+                });
+            }
+        })
     }
 </script>
 
@@ -114,8 +182,23 @@
         e.preventDefault();
         $.ajax({
             type: "get",
-            url: "<?= base_url('Master/Perkiraan/new') ?>",
+            url: "<?= base_url('Master/Jabatan/new') ?>",
             dataType: "json",
+            beforeSend: function() {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Loading...',
+                    html: 'Sedang Diproses',
+                    showConfirmButton: false,
+                    allowOutsideClick: false,
+                    onBeforeOpen: () => {
+                        Swal.showLoading()
+                    }
+                });
+            },
+            complete: function() {
+                Swal.close();
+            },
             success: function(response) {
                 $('.modal-place').html("").html(response.html);
                 $('.modal-place #modal').modal('show');

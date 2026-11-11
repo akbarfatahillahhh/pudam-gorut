@@ -49,6 +49,9 @@ abstract class BaseController extends Controller
      * @param LoggerInterface $logger
      */
 
+    protected $db;
+    protected $uri;
+    protected $test;
 
     public function initController(RequestInterface $request, ResponseInterface $response, LoggerInterface $logger)
     {
@@ -60,5 +63,8 @@ abstract class BaseController extends Controller
         // E.g.: $this->session = \Config\Services::session();
         $this->db = \Config\Database::connect();
         $this->uri = current_url(true);
+
+        $this->test = 'test';
+
     }
 }

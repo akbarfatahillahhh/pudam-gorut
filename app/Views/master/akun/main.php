@@ -15,25 +15,25 @@
             </div>
         </div>
         <div class="table-responsive">
-            <table id="table" class="table table-sm table-bordered border-dark text-nowrap mb-0 align-middle">
+            <table id="table" class="table table-sm table-bordered table-striped border-dark text-nowrap mb-0 align-middle w-100">
                 <thead class="text-black fs-4">
                     <tr>
-                        <th class="text-center align-middle">
+                        <th class="text-center align-middle border border-dark">
                             <h6 class="fw-semibold mb-0">#</h6>
                         </th>
-                        <th class="text-center align-middle">
+                        <th class="text-center align-middle border border-dark">
                             <h6 class="fw-semibold mb-0">Nama Lengkap</h6>
                         </th>
-                        <th class="text-center align-middle">
+                        <th class="text-center align-middle border border-dark">
                             <h6 class="fw-semibold mb-0">Username</h6>
                         </th>
-                        <th class="text-center align-middle">
+                        <th class="text-center align-middle border border-dark">
                             <h6 class="fw-semibold mb-0">Level</h6>
                         </th>
-                        <th class="text-center align-middle">
+                        <th class="text-center align-middle border border-dark">
                             <h6 class="fw-semibold mb-0">Status</h6>
                         </th>
-                        <th class="text-center align-middle">
+                        <th class="text-center align-middle border border-dark">
                             <h6 class="fw-semibold mb-0">#</h6>
                         </th>
                     </tr>
@@ -55,51 +55,49 @@
         $('#table').DataTable({
             processing: true,
             serverSide: true,
-            pageLength: 50,
             ajax: {
+                type: "get",
                 url: "<?= base_url('Master/Akun/datatable') ?>",
             },
             columns: [{
-                    data: 'id',
-                    name: 'id',
-                    width: '1%',
-                    class: 'text-center align-middle'
-                },
-                {
-                    data: 'kdDokter',
-                    name: 'kdDokter',
-                    width: '10%',
-                    class: 'text-center align-middle'
-                },
-                {
-                    data: 'kode',
-                    name: 'kode',
-                    width: '10%',
-                    class: 'text-center align-middle'
-                },
-                {
-                    data: 'nmDokter',
-                    name: 'nmDokter',
-                    class: 'align-middle'
-                },
-                {
-                    data: 'nmDokterIHS',
-                    name: 'nmDokterIHS',
-                    class: 'align-middle'
-                },
-                {
-                    data: 'aksiAktif',
-                    name: 'aksiAktif',
+                    data: null,
+                    render: function(data, type, row, meta) {
+                        return meta.row + meta.settings._iDisplayStart + 1;
+                    },
+                    class: 'text-center text-black aling-middle py-1 border-bottom border-dark',
                     searchable: false,
-                    width: '5%',
-                    class: 'text-center align-middle'
+                    width: '3%'
+                },
+                {
+                    data: null,
+                    class: 'text-black aling-middle py-1 border-bottom border-dark',
+                    width: '25%',
+                    render: function(data) {
+                        return `<button class="btn text-uppercase btn-xs py-0 text-primary" onclick="detailPegawai(${data.id_pegawai})">${data.nama_lengkap}</button>`;
+                    }
+                },
+                {
+                    data: 'username',
+                    class: 'text-center text-black aling-middle py-1 border-bottom border-dark',
+                    width: '20%',
+                },
+                {
+                    data: 'level',
+                    class: 'text-center text-uppercase text-black aling-middle py-1 border-bottom border-dark',
+                    searchable: false,
+                    width: '15%'
+                },
+                {
+                    data: 'blokir',
+                    class: 'text-center text-uppercase text-black aling-middle py-1 border-bottom border-dark',
+                    searchable: false,
+                    width: '10%'
                 },
                 {
                     data: 'aksi',
-                    name: 'aksi',
+                    class: 'text-center text-black aling-middle py-1 border-bottom border-dark',
                     searchable: false,
-                    width: '5%',
-                    class: 'text-center align-middle'
+                    width: '3%'
                 },
             ]
         });
@@ -111,12 +109,175 @@
             type: "get",
             url: "<?= base_url('Master/Akun/new') ?>",
             dataType: "json",
+            beforeSend: function() {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Loading...',
+                    html: 'Sedang Diproses',
+                    showConfirmButton: false,
+                    allowOutsideClick: false,
+                    onBeforeOpen: () => {
+                        Swal.showLoading()
+                    }
+                });
+            },
+            complete: function() {
+                Swal.close();
+            },
             success: function(response) {
                 $('.modal-place').html("").html(response.html);
                 $('.modal-place #modal').modal('show');
             }
         });
     });
+
+    function blokir(username, blokir) {
+        var title = (blokir == 'Y') ? 'Aktifkan' : 'Blokir';
+        Swal.fire({
+            title: `${title} Pelanggan ini ?`,
+            html: `Apakah anda yakin untuk <strong>${title}</strong> Pelanggan ini !`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: `Ya, ${title}!`,
+        }).then((result) => {
+            if (result.isConfirmed) {
+                $.ajax({
+                    type: "post",
+                    url: "<?= base_url('Master/Akun/blokir/') ?>/" + username,
+                    data: {
+                        username: username,
+                        blokir: blokir
+                    },
+                    dataType: "json",
+                    success: function(response) {
+                        $('#table').DataTable().ajax.reload();
+                    }
+                });
+            }
+        })
+    }
+
+    function detailPegawai(id_pegawai) {
+        $.ajax({
+            type: "post",
+            url: "<?= base_url('Master/Akun/detail_pegawai') ?>",
+            data: {
+                id_pegawai: id_pegawai
+            },
+            dataType: "json",
+            beforeSend: function() {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Loading...',
+                    html: 'Sedang Diproses',
+                    showConfirmButton: false,
+                    allowOutsideClick: false,
+                    onBeforeOpen: () => {
+                        Swal.showLoading()
+                    }
+                });
+            },
+            complete: function() {
+                Swal.close();
+            },
+            success: function(response) {
+                $('.modal-place').html("").html(response.html);
+                $('.modal-place #modal').modal('show');
+            }
+        });
+    }
+
+    function gantiAkses(id_session) {
+        $.ajax({
+            type: "post",
+            url: "<?= base_url('Master/Akun/setting_akses') ?>",
+            data: {
+                id_session: id_session
+            },
+            dataType: "json",
+            beforeSend: function() {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Loading...',
+                    html: 'Sedang Diproses',
+                    showConfirmButton: false,
+                    allowOutsideClick: false,
+                    onBeforeOpen: () => {
+                        Swal.showLoading()
+                    }
+                });
+            },
+            complete: function() {
+                Swal.close();
+            },
+            success: function(response) {
+                $('.modal-place').html("").html(response.html);
+                $('.modal-place #modal').modal('show');
+            }
+        });
+    }
+
+    function gantiPassword(id_session) {
+        $.ajax({
+            type: "post",
+            url: "<?= base_url('Master/Akun/ganti_password') ?>",
+            data: {
+                id_session: id_session
+            },
+            dataType: "json",
+            beforeSend: function() {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Loading...',
+                    html: 'Sedang Diproses',
+                    showConfirmButton: false,
+                    allowOutsideClick: false,
+                    onBeforeOpen: () => {
+                        Swal.showLoading()
+                    }
+                });
+            },
+            complete: function() {
+                Swal.close();
+            },
+            success: function(response) {
+                $('.modal-place').html("").html(response.html);
+                $('.modal-place #modal').modal('show');
+            }
+        });
+    }
+
+    function edit(id_session) {
+        $.ajax({
+            type: "post",
+            url: "<?= base_url('Master/Akun/edit') ?>",
+            data: {
+                id_session: id_session
+            },
+            dataType: "json",
+            beforeSend: function() {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Loading...',
+                    html: 'Sedang Diproses',
+                    showConfirmButton: false,
+                    allowOutsideClick: false,
+                    onBeforeOpen: () => {
+                        Swal.showLoading()
+                    }
+                });
+            },
+            complete: function() {
+                Swal.close();
+            },
+            success: function(response) {
+                $('.modal-place').html("").html(response.html);
+                $('.modal-place #modal').modal('show');
+            }
+        });
+    }
 </script>
 
 <?= $this->endSection() ?>

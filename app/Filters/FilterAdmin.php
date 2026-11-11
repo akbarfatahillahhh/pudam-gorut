@@ -10,15 +10,15 @@ class FilterAdmin implements FilterInterface
 {
     public function before(RequestInterface $request, $arguments = null)
     {
-        if (session()->username == '') {
-            // return redirect()->to(base_url('login'));
+        if (empty(session()->username)) {
+            return redirect()->to('/login');
         }
     }
 
     public function after(RequestInterface $request, ResponseInterface $response, $arguments = null)
     {
-        if (session()->username == 1) {
-            // return redirect()->to(base_url('Home'));
+        if (!empty(session()->username)) {
+            return redirect()->to('/home');
         }
     }
 }

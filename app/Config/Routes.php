@@ -22,6 +22,10 @@ $routes->get('/login', 'Login::index');
 $routes->get('/logout', 'Login::logout');
 $routes->post('/login', 'Login::login');
 
+// ROUTES BILLING SYSTEM
+$routes->get('/billing', 'Home::billing');
+// ROUTES BILLING SYSTEM
+    
 // routes master e-kas
 $routes->get('/master/perkiraan', 'Master\Perkiraan::index');
 $routes->get('/master/jabatan', 'Master\Jabatan::index');

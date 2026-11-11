@@ -13,7 +13,17 @@ class Home extends BaseController
 
     public function index()
     {
-        return view('dashboard');
+        return view('landing_page');
+    }
+
+    public function ekas()
+    {
+        return view('dashboard_ekas');
+    }
+
+    public function billing()
+    {
+        return view('dashboard_billing');
     }
 
     public function get_sidebar()

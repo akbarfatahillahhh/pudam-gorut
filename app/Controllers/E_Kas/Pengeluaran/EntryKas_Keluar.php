@@ -401,6 +401,7 @@ class EntryKas_Keluar extends BaseController
         'mode' => 'utf-8',
         'format' => 'Legal',
         'orientation' => 'P',
+        'tempDir' => WRITEPATH . 'mpdf_temp',
     ]);
     $mpdf->setFooter('Voucher');
     $mpdf->WriteHTML($pdf);
@@ -425,6 +426,7 @@ class EntryKas_Keluar extends BaseController
         'mode' => 'utf-8',
         'format' => 'Legal',
         'orientation' => 'P',
+        'tempDir' => WRITEPATH . 'mpdf_temp',
     ]);
         $mpdf->setFooter('KWITANSSI');
         $mpdf->WriteHTML($pdf);
@@ -456,12 +458,8 @@ class EntryKas_Keluar extends BaseController
         $result = $table->get()->getResultArray();
         }else if($pdf == 'rjbk'){
         $table->select('
-        akun_kas_keluar.PERKIRAAN_ID,
-        akun_kas_keluar.DEBET,
-        akun_kas_keluar.KREDIT
-        ');
-        $table->select('
-        akun_perkiraan.ID_GROP_PERKIRAAN,
+        SUM(akun_kas_keluar.DEBET) AS DEBET,
+        SUM(akun_kas_keluar.KREDIT) AS KREDIT
         ');
         $table->select('
         akun_perkiraan_group.GROUP_PERKIRAAN,
@@ -472,7 +470,7 @@ class EntryKas_Keluar extends BaseController
         $table->join('akun_perkiraan_group', 'akun_perkiraan.ID_GROP_PERKIRAAN = akun_perkiraan_group.ID', 'left');
         $table->where('MONTH(akun_kas_keluar.TANGGAL)', date('m',strtotime($tanggal)));
         $table->where('YEAR(akun_kas_keluar.TANGGAL)', date('Y',strtotime($tanggal)));
-        $table->groupBy('akun_perkiraan_group.GROUP_PERKIRAAN');
+        $table->groupBy('akun_perkiraan_group.GROUP_PERKIRAAN, akun_perkiraan_group.NO_PERKIRAAN, akun_perkiraan_group.NORMAL');
         $result = $table->get()->getResultArray();
         }else if($pdf == 'dhhd'){
             $table->select('akun_kas_keluar.NOMOR AS NMR,akun_kas_keluar.TANGGAL as TGL,akun_kas_keluar.BANK,akun_kas_keluar.KETERANGAN,akun_kas_keluar.DEBET,akun_kas_keluar.KREDIT');
@@ -488,7 +486,6 @@ class EntryKas_Keluar extends BaseController
             $table->where('YEAR(akun_kas_keluar.TANGGAL)', date('Y',strtotime($tanggal)));
             $result = $table->get()->getResultArray();
         }
-     dd($result); die;
 $html = view('e-kas/pengeluaran/riwayat/modal/pdf/pdf_rekapan_'.$pdf.'',['tanggal' =>
 bulan(date('m',strtotime($tanggal))) ,'tahun' => date('Y',strtotime($tanggal)),'result' => $result]);
 
@@ -499,6 +496,7 @@ $mpdf = new \Mpdf\Mpdf([
 'mode' => 'utf-8',
 'format' => 'Legal',
 'orientation' => 'P',
+'tempDir' => WRITEPATH . 'mpdf_temp',
 ]);
 $mpdf->setFooter('REKAP JURNAL BAYAR KAS');
 $mpdf->WriteHTML($convert);

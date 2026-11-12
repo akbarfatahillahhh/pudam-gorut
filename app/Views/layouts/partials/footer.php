@@ -1,6 +1,6 @@
 </div>
-<script src="<?= base_url() ?>/assets/libs/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-<script src="<?= base_url() ?>/assets/js/dashboard.js"></script>
+<script src="<?= base_url() ?>/assets/libs/bootstrap/dist/js/bootstrap.bundle.min.js?v=<?= filemtime(FCPATH . 'assets/libs/bootstrap/dist/js/bootstrap.bundle.min.js') ?>"></script>
+<script src="<?= base_url() ?>/assets/js/dashboard.js?v=<?= filemtime(FCPATH . 'assets/js/dashboard.js') ?>"></script>
 <script src="<?= base_url() ?>/assets/js/app.min.js"></script>
 <!-- <script src="<?= base_url() ?>/assets/js/sidebarmenu.js"></script> -->
 <!-- <script src="<?= base_url() ?>/assets/libs/jquery/dist/jquery.min.js"></script> -->

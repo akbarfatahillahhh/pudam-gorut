@@ -29,7 +29,8 @@ $routes->get('/billing', 'Home::billing');
 // routes master e-kas
 $routes->get('/master/perkiraan', 'Master\Perkiraan::index');
 $routes->get('/master/jabatan', 'Master\Jabatan::index');
-$routes->get('/master/tugas-pokok', 'Master\TugasPokok::index');
+$routes->get('/master/tugas-pokok', 'Master\Pokok::index');
+$routes->get('/master/pokok', 'Master\Pokok::index');
 $routes->get('/master/pegawai', 'Master\Pegawai::index');
 
 // routes master billing system
@@ -37,7 +38,6 @@ $routes->get('/master/set-kelompok-tarif', 'Master\SetKelompokTarif::index');
 $routes->get('/master/set-jenis-pelanggan', 'Master\SetJenisPelanggan::index');
 $routes->get('/master/pelanggan', 'Master\Pelanggan::index');
 $routes->get('/master/pasang-meter', 'Master\Pelanggan::pasangMeter');
-$routes->get('/master/tugas-pokok', 'Master\TugasPokok::index');
 $routes->get('/master/pegawai', 'Master\Pegawai::index');
 
 // routes master wilayah

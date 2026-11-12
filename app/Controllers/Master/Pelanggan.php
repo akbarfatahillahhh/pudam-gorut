@@ -204,8 +204,8 @@ class Pelanggan extends BaseController
 
     public function new()
     {
-        $NoSambungan = $this->db->table('t_kecamatan')->select('id_kec, kecamatan')->groupBy('kecamatan')->get()->getResultArray();
-        $kelompok_tarif = $this->db->table('m_jasa')->select('id_jasa, kelompok_jasa')->groupBy('kelompok_jasa')->get()->getResultArray();
+        $NoSambungan = $this->db->table('t_kecamatan')->select('id_kec, kecamatan')->groupBy('id_kec, kecamatan')->get()->getResultArray();
+        $kelompok_tarif = $this->db->table('m_jasa')->select('id_jasa, kelompok_jasa')->groupBy('id_jasa, kelompok_jasa')->get()->getResultArray();
         $html =  view('/master/bs/pelanggan/modal/new', ['title' => $this->title, 'sambungan' => $NoSambungan, 'kelompok_tarif' => $kelompok_tarif]);
         echo json_encode(['html' => $html]);
     }
@@ -246,11 +246,8 @@ class Pelanggan extends BaseController
 
 
         $jasa = $this->db->table('m_jasa')
-            ->select('m_jasa.id_jasa, m_jasa.kelompok_jasa, 
-              GROUP_CONCAT(m_jenis_pelanggan.id_jenis) AS id_jenis, 
-              m_jenis_pelanggan.jenis_pelanggan')
-            ->join('m_jenis_pelanggan', 'm_jasa.id_jasa = m_jenis_pelanggan.id_jasa', 'left')
-            ->groupBy('m_jasa.id_jasa')
+            ->select('m_jasa.id_jasa, m_jasa.kelompok_jasa')
+            ->groupBy('m_jasa.id_jasa, m_jasa.kelompok_jasa')
             ->get()
             ->getResultArray();
 

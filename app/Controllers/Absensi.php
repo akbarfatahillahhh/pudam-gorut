@@ -57,8 +57,8 @@ class Absensi extends BaseController
             $unit = $this->request->getVar('unit');
 
             $users = $this->db->table('users');
-            $users->select('users.nama_lengkap, users.id_pegawai');
-            $users->select('pegawai.LATITUDE, pegawai.LONGITUDE');
+            $users->select('MAX(users.nama_lengkap) AS nama_lengkap, users.id_pegawai');
+            $users->select('MAX(pegawai.LATITUDE) AS LATITUDE, MAX(pegawai.LONGITUDE) AS LONGITUDE');
             $users->join('pegawai', 'pegawai.ID = users.id_pegawai');
             $users->where('users.blokir', 'N');
 

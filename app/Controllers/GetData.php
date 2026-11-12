@@ -48,7 +48,7 @@ class Getdata extends BaseController
             $caridata = $this->request->getGet('search');
 
             $builder = $this->db->table('users');
-            $builder->select('users.nama_lengkap, users.id_session');
+            $builder->select('MAX(users.nama_lengkap) AS nama_lengkap, users.id_session');
             $builder->join('t_tagihan', 'users.id_session = t_tagihan.id_user');
             $builder->where('users.blokir', 'N');
 
@@ -76,7 +76,7 @@ class Getdata extends BaseController
         if ($this->request->isAJAX()) {
 
             $builder = $this->db->table('users');
-            $builder->select('nama_lengkap, id_session');
+            $builder->select('MAX(nama_lengkap) AS nama_lengkap, id_session');
             $builder->where('level', 'mobileloket');
             $builder->where('mobile_akses', 2);
             $builder->where('blokir', 'N');

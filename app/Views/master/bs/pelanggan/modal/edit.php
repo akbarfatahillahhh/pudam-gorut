@@ -30,7 +30,7 @@
                             <label class="form-label">Jenis Pelanggan</label>
                             <select class="form-select" id="jenis_pelanggan" name="id_jenis">
                                 <option value="">[ Pilih Jenis Pelanggan ]</option>
-                                <?php foreach ($jasa as $jenis_val) : ?>
+                                <?php foreach ($nama_jenis as $jenis_val) : ?>
                                     <option value="<?= $jenis_val['id_jenis'] ?>" <?= ($data['id_jenis'] == $jenis_val['id_jenis']) ? 'selected' : '' ?>><?= $jenis_val['jenis_pelanggan'] ?></option>
                                 <?php endforeach; ?>
                             </select>

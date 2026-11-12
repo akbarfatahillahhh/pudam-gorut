@@ -708,9 +708,9 @@ class Pegawai extends BaseController
             ->get()->getRowArray();
 
         $absensi = $this->db->table('absensi_masuk')
-            ->select('absensi_masuk.TANGGAL, absensi_masuk.JAM as JAM_MASUK, absensi_pulang.JAM as JAM_PULANG')
-            ->select('absensi_masuk.KETERANGAN as KETERANGAN_MASUK, absensi_pulang.KETERANGAN as KETERANGAN_PULANG')
-            ->join('absensi_pulang', 'absensi_pulang.PEGAWAI_ID=absensi_masuk.PEGAWAI_ID', 'left')
+            ->select('absensi_masuk.TANGGAL, MAX(absensi_masuk.JAM) as JAM_MASUK, MAX(absensi_pulang.JAM) as JAM_PULANG')
+            ->select('MAX(absensi_masuk.KETERANGAN) as KETERANGAN_MASUK, MAX(absensi_pulang.KETERANGAN) as KETERANGAN_PULANG')
+            ->join('absensi_pulang', 'absensi_pulang.PEGAWAI_ID=absensi_masuk.PEGAWAI_ID AND absensi_pulang.TANGGAL=absensi_masuk.TANGGAL', 'left')
             ->where('DATE_FORMAT(absensi_masuk.TANGGAL, "%Y-%m")', $bulan_absensi)
             ->where('absensi_masuk.PEGAWAI_ID', $id_pegawai)
             ->orderBy('absensi_masuk.TANGGAL', 'DESC')
@@ -726,12 +726,15 @@ class Pegawai extends BaseController
                 $bgMasuk = ($value['JAM_MASUK'] <= $m_setting_absen['batas_masuk']) ? 'bg-success' : 'bg-danger';
                 $bgPulang = ($value['JAM_PULANG'] >= $m_setting_absen['batas_pulang']) ? 'bg-success' : 'bg-warning';
 
+                $jamMasuk = !empty($value['JAM_MASUK']) ? date('H:i', strtotime($value['JAM_MASUK'])) . ' WITA' : '-';
+                $jamPulang = !empty($value['JAM_PULANG']) ? date('H:i', strtotime($value['JAM_PULANG'])) . ' WITA' : '-';
+
                 $html .= '<tr>';
                 $html .= '<td class="align-middle text-black text-center fs-2">' . $no++ . '</td>';
                 $html .= '<td class="align-middle text-black text-center fs-2">' . date('d/m/Y', strtotime($value['TANGGAL'])) . '</td>';
-                $html .= '<td class="align-middle text-black text-center fs-2" width="20%">' . date('H:i', strtotime($value['JAM_MASUK'])) . ' WITA</td>';
+                $html .= '<td class="align-middle text-black text-center fs-2" width="20%">' . $jamMasuk . '</td>';
                 $html .= '<td class="align-middle text-black text-center fs-2 ' . $bgMasuk . '" width="20%">' . ($value['KETERANGAN_MASUK'] != NULL ? $value['KETERANGAN_MASUK'] : '-') . '</td>';
-                $html .= '<td class="align-middle text-black text-center fs-2" width="20%">' . date('H:i', strtotime($value['JAM_PULANG'])) . ' WITA</td>';
+                $html .= '<td class="align-middle text-black text-center fs-2" width="20%">' . $jamPulang . '</td>';
                 $html .= '<td class="align-middle text-black text-center fs-2" width="20%">' . ($value['KETERANGAN_PULANG'] != NULL ? $value['KETERANGAN_PULANG'] : '-') . '</td>';
                 $html .= '</tr>';
             }

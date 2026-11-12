@@ -62,6 +62,9 @@ writable/uploads/*
 
 writable/debugbar/*
 
+writable/mpdf_temp/*
+!writable/mpdf_temp/index.html
+
 php_errors.log
 
 #-------------------------
@@ -105,6 +108,9 @@ build/
 nbbuild/
 dist/
 nbdist/
+# aset vendor front-end harus ikut ter-deploy (bootstrap, dll)
+!public/assets/libs/*/dist/
+!public/assets/libs/*/dist/**
 nbactions.xml
 nb-configuration.xml
 .nb-gradle/

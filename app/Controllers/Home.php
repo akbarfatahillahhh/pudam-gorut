@@ -35,7 +35,7 @@ class Home extends BaseController
             ->get()
             ->getRowArray();
 
-        echo json_encode(['menu' => $row['menu']]);
+        echo json_encode(['menu' => $row['menu'] ?? '[]']);
     }
 
     public function page($page = null)
@@ -548,7 +548,7 @@ class Home extends BaseController
                 $builder->where('STATUSVERIFIKASI', $status);
             }
     
-            $builder->orderBy('KECAMATAN', 'ASC');
+            $builder->orderBy('NMKECAMATAN', 'ASC');
             $builder->groupBy('NMKECAMATAN');
             $builder->groupBy('NAMAPETUGAS');
     
@@ -556,7 +556,7 @@ class Home extends BaseController
         }
 
         $petugas = $this->db->table('view_catat_meter');
-        $petugas->select('NAMAPETUGAS, PETUGASSESSION');
+        $petugas->select('MAX(NAMAPETUGAS) AS NAMAPETUGAS, PETUGASSESSION');
         $petugas->where('TANGGALCATAT >=', $awal);
         $petugas->where('TANGGALCATAT <=', $akhir);
         $petugas->groupBy('PETUGASSESSION');
@@ -641,7 +641,7 @@ class Home extends BaseController
         if ($lokasi != 'all') {
             $kelurahan->where('kel.id_kelurahan', $lokasi);
         }
-        $kelurahan->groupBy('kel.kelurahan')->orderBy('kel.id_kelurahan', 'ASC');
+        $kelurahan->groupBy('kel.id_kelurahan')->orderBy('kel.id_kelurahan', 'ASC');
         $kelurahan = $kelurahan->get()->getResultArray();
             
 
@@ -722,7 +722,7 @@ class Home extends BaseController
             ->join('t_kecamatan kec', 'kec.id_kec = kel.id_kec')
             ->where('mp.status_aktif', '1')
             ->where('mp.petugas_meter', $petugas)
-            ->groupBy('kel.kelurahan')->orderBy('kel.id_kelurahan', 'ASC')
+            ->groupBy('kel.id_kelurahan')->orderBy('kel.id_kelurahan', 'ASC')
             ->get()->getResultArray();
 
         echo json_encode([
@@ -792,7 +792,7 @@ class Home extends BaseController
         if ($lokasi != 'all') {
             $kelurahan->where('kel.id_kelurahan', $lokasi);
         }
-        $kelurahan->groupBy('kel.kelurahan')->orderBy('kel.id_kelurahan', 'ASC');
+        $kelurahan->groupBy('kel.id_kelurahan')->orderBy('kel.id_kelurahan', 'ASC');
         $kelurahan = $kelurahan->get()->getResultArray();
 
         $no = 1;

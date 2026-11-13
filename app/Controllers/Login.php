@@ -9,13 +9,16 @@ class Login extends BaseController
 
     public function __construct()
     {
-        if (session('logged_in')) {
-            return redirect()->to('/home');
-        }
+        // Redirect tidak bisa dilakukan dari constructor: nilai kembaliannya
+        // diabaikan. Pemeriksaan dipindah ke index().
     }
 
     public function index()
     {
+        if (session('logged_in')) {
+            return redirect()->to('/home');
+        }
+
         return view('login');
     }
 

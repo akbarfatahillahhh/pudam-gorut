@@ -49,7 +49,7 @@ if (!function_exists('sistem_daftar')) {
             SISTEM_KAS => [
                 'label' => 'E-Kas',
                 'icon'  => 'ti ti-building-bank',
-                'home'  => 'kas',
+                'home'  => 'ekas',
             ],
         ];
     }
@@ -89,7 +89,7 @@ if (!function_exists('sistem_peta_prefix')) {
             'laporan/rekapitulasi-piutang'   => SISTEM_BILLING,
 
             // ===== KAS (E-KAS) =====
-            'kas'                            => SISTEM_KAS,
+            'ekas'                           => SISTEM_KAS,
             'home/ekas'                      => SISTEM_KAS,
             'e-kas'                          => SISTEM_KAS,
             'e_kas'                          => SISTEM_KAS, // autoRoute /E_Kas/...
@@ -400,7 +400,7 @@ if (!function_exists('sistem_menu')) {
                 [
                     'judul' => 'Home',
                     'items' => [
-                        ['label' => 'Dashboard', 'url' => 'kas', 'icon' => 'ti ti-layout-dashboard', 'id' => 'dashboard_menu', 'prefix' => 'kas'],
+                        ['label' => 'Dashboard', 'url' => 'ekas', 'icon' => 'ti ti-layout-dashboard', 'id' => 'dashboard_menu', 'prefix' => 'ekas'],
                     ],
                 ],
                 [

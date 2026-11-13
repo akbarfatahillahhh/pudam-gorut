@@ -13,10 +13,18 @@ class Home extends BaseController
 
     public function index()
     {
-        // Dulu menampilkan landing_page (template contoh, bukan bagian
-        // aplikasi). Sekarang langsung ke dashboard sistem yang boleh
-        // dibuka user.
-        return redirect()->to(sistem_home_url(sistem_aktif()));
+        // Halaman Pilih Modul. Kalau user hanya punya satu sistem, langsung
+        // ke dashboard sistem itu (tidak ada yang perlu dipilih).
+        $akses = sistem_akses_user();
+
+        if (count($akses) === 1) {
+            return redirect()->to(sistem_home_url($akses[0]));
+        }
+
+        return view('landing_page', [
+            'daftar_sistem' => sistem_daftar(),
+            'akses'         => $akses,
+        ]);
     }
 
     public function ekas()

@@ -7,7 +7,7 @@
     <title>Pilih Modul | PERUMDA GORUT</title>
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="shortcut icon" href="logo/perumda-gorut.png" type="image/x-icon">
+    <link rel="shortcut icon" href="<?= base_url('logo/perumda-gorut.png') ?>" type="image/x-icon">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Fraunces:wght@700;900&display=swap" rel="stylesheet">
 
     <style>
@@ -473,7 +473,7 @@
             <div class="mp-header">
                 <div class="mp-brand">
                     <div class="mp-brand-icon">
-                        <img src="logo/perumda-gorut.png" alt="PERUMDA GORUT">
+                        <img src="<?= base_url('logo/perumda-gorut.png') ?>" alt="PERUMDA GORUT">
                     </div>
                     <div class="mp-brand-text">
                         <div class="mp-brand-title">PERUMDA GORUT</div>
@@ -487,7 +487,7 @@
                     </div>
 
                     <!-- TOMBOL LOGOUT -->
-                    <a href="logout" class="mp-btn-logout" id="btn-logout">
+                    <a href="<?= base_url('logout') ?>" class="mp-btn-logout" id="btn-logout">
                         <span>Keluar</span>
                         <i class="fas fa-right-from-bracket"></i>
                     </a>
@@ -502,47 +502,56 @@
 
             <!-- Grid Modul -->
             <div class="mp-module-grid">
+                <?php
+                // Hanya sistem yang boleh dibuka user yang ditampilkan
+                // (lihat App\Helpers\sistem_helper.php -> sistem_akses_user()).
+                $daftarSistem = $daftar_sistem ?? sistem_daftar();
+                $aksesUser    = $akses ?? sistem_akses_user();
 
-                <!-- BILLING SISTEM -->
-                <a href="billing" class="mp-module-card">
-                    <div class="mp-module-head">
-                        <div class="mp-module-icon">
-                            <i class="fas fa-file-invoice-dollar"></i>
-                        </div>
-                        <div>
-                            <div class="mp-module-title">Billing Sistem</div>
-                            <span class="mp-module-tag">Keuangan &amp; Tagihan</span>
-                        </div>
-                    </div>
-                    <p class="mp-module-desc">
-                        Pengelolaan tagihan pelanggan, penagihan, pembayaran, dan laporan keuangan secara terpadu.
-                    </p>
-                    <div class="mp-module-foot">
-                        <span class="mp-module-cta">Masuk Modul</span>
-                        <span class="mp-module-arrow"><i class="fas fa-arrow-right"></i></span>
-                    </div>
-                </a>
+                $info = [
+                    SISTEM_BILLING => [
+                        'judul' => 'Billing Sistem',
+                        'tag'   => 'Keuangan &amp; Tagihan',
+                        'desc'  => 'Pengelolaan tagihan pelanggan, penagihan, pembayaran, dan laporan keuangan secara terpadu.',
+                        'icon'  => 'fa-file-invoice-dollar',
+                        'kelas' => '',
+                    ],
+                    SISTEM_KAS => [
+                        'judul' => 'Ekas-Sistem',
+                        'tag'   => 'Operasional &amp; Kasir',
+                        'desc'  => 'Pencatatan kas, logistik, persediaan, dan pengelolaan operasional harian perusahaan.',
+                        'icon'  => 'fa-cash-register',
+                        'kelas' => 'ekas',
+                    ],
+                ];
 
-                <!-- EKAS-SISTEM -->
-                <a href="ekas" class="mp-module-card ekas">
-                    <div class="mp-module-head">
-                        <div class="mp-module-icon">
-                            <i class="fas fa-cash-register"></i>
-                        </div>
-                        <div>
-                            <div class="mp-module-title">Ekas-Sistem</div>
-                            <span class="mp-module-tag">Operasional &amp; Kasir</span>
-                        </div>
-                    </div>
-                    <p class="mp-module-desc">
-                        Pencatatan meter, laporan aktivitas PCM, dan pengelolaan operasional harian di lapangan.
-                    </p>
-                    <div class="mp-module-foot">
-                        <span class="mp-module-cta">Masuk Modul</span>
-                        <span class="mp-module-arrow"><i class="fas fa-arrow-right"></i></span>
-                    </div>
-                </a>
+                foreach ($aksesUser as $kodeSistem):
+                    $sistem = $daftarSistem[$kodeSistem] ?? null;
+                    $meta   = $info[$kodeSistem] ?? null;
 
+                    if (!$sistem || !$meta) {
+                        continue;
+                    }
+                ?>
+                    <a href="<?= base_url($sistem['home']) ?>" class="mp-module-card <?= $meta['kelas'] ?>">
+                        <div class="mp-module-head">
+                            <div class="mp-module-icon">
+                                <i class="fas <?= $meta['icon'] ?>"></i>
+                            </div>
+                            <div>
+                                <div class="mp-module-title"><?= $meta['judul'] ?></div>
+                                <span class="mp-module-tag"><?= $meta['tag'] ?></span>
+                            </div>
+                        </div>
+                        <p class="mp-module-desc">
+                            <?= $meta['desc'] ?>
+                        </p>
+                        <div class="mp-module-foot">
+                            <span class="mp-module-cta">Masuk Modul</span>
+                            <span class="mp-module-arrow"><i class="fas fa-arrow-right"></i></span>
+                        </div>
+                    </a>
+                <?php endforeach; ?>
             </div>
 
             <div class="mp-footer">
@@ -568,7 +577,7 @@
         document.getElementById('btn-logout').addEventListener('click', function (e) {
             e.preventDefault();
             if (confirm('Apakah Anda yakin ingin keluar dari aplikasi?')) {
-                window.location.href = 'logout';
+                window.location.href = '<?= base_url('logout') ?>';
             }
         });
     </script>

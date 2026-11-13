@@ -52,7 +52,7 @@ $routes->get('/laporan/rekapitulasi-piutang', 'Laporan\RekapitulasiPiutang::inde
 // SISTEM E-KAS
 // Kas keluar/masuk, logistik, persediaan, kepegawaian.
 // =====================================================================
-$routes->get('/kas', 'Home::ekas');
+$routes->get('/ekas', 'Home::ekas');
 
 // master kas
 $routes->get('/master/perkiraan', 'Master\Perkiraan::index');

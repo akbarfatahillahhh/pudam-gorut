@@ -43,12 +43,12 @@ if (!function_exists('sistem_daftar')) {
         return [
             SISTEM_BILLING => [
                 'label' => 'Billing',
-                'icon'  => 'fa-solid fa-file-invoice-dollar',
+                'icon'  => 'ti ti-file-invoice',
                 'home'  => 'billing',
             ],
             SISTEM_KAS => [
                 'label' => 'E-Kas',
-                'icon'  => 'fa-solid fa-cash-register',
+                'icon'  => 'ti ti-building-bank',
                 'home'  => 'kas',
             ],
         ];
@@ -408,11 +408,11 @@ if (!function_exists('sistem_menu')) {
                     'items' => [
                         [
                             'label'    => 'Kas Keluar',
-                            'icon'     => 'fa fa-arrow-left',
+                            'icon'     => 'ti ti-cash-banknote',
                             'prefix'   => 'e-kas/keluar|e-kas/riwayat',
                             'children' => [
-                                ['label' => 'Kas Pengeluaran', 'url' => 'e-kas/keluar', 'icon' => 'fa-solid fa-money-bill-transfer', 'prefix' => 'e-kas/keluar'],
-                                ['label' => 'Riwayat Kas Pengeluaran', 'url' => 'e-kas/riwayat', 'icon' => 'fas fa-history', 'prefix' => 'e-kas/riwayat'],
+                                ['label' => 'Kas Pengeluaran', 'url' => 'e-kas/keluar', 'icon' => 'ti ti-receipt-2', 'prefix' => 'e-kas/keluar'],
+                                ['label' => 'Riwayat Kas Pengeluaran', 'url' => 'e-kas/riwayat', 'icon' => 'ti ti-history', 'prefix' => 'e-kas/riwayat'],
                             ],
                         ],
                         // Kas Masuk (penerimaan kas air / non air) belum ada
@@ -422,16 +422,16 @@ if (!function_exists('sistem_menu')) {
                 [
                     'judul' => 'Logistik',
                     'items' => [
-                        ['label' => 'Faktur Pembelian', 'url' => 'faktur-pembelian', 'icon' => 'fa-solid fa-right-to-bracket', 'id' => 'faktur_pembelian_menu', 'prefix' => 'faktur-pembelian|barang-masuk'],
-                        ['label' => 'Entry Permintaan', 'url' => 'barang-keluar/permintaan', 'icon' => 'fa-solid fa-right-from-bracket', 'id' => 'entry_permintaan_menu', 'prefix' => 'barang-keluar/permintaan'],
+                        ['label' => 'Faktur Pembelian', 'url' => 'faktur-pembelian', 'icon' => 'ti ti-file-invoice', 'id' => 'faktur_pembelian_menu', 'prefix' => 'faktur-pembelian|barang-masuk'],
+                        ['label' => 'Entry Permintaan', 'url' => 'barang-keluar/permintaan', 'icon' => 'ti ti-clipboard-plus', 'id' => 'entry_permintaan_menu', 'prefix' => 'barang-keluar/permintaan'],
                         [
                             'label'    => 'Gudang',
-                            'icon'     => 'fas fa-boxes',
+                            'icon'     => 'ti ti-building-warehouse',
                             'prefix'   => 'gudang',
                             'children' => [
-                                ['label' => 'Data Barang', 'url' => 'gudang/barang', 'icon' => 'fas fa-boxes-packing', 'prefix' => 'gudang/barang'],
-                                ['label' => 'Cek Permintaan', 'url' => 'gudang/cek-permintaan', 'icon' => 'fas fa-clipboard-check', 'prefix' => 'gudang/cek-permintaan'],
-                                ['label' => 'Opname Stok', 'url' => 'gudang/opname-stok', 'icon' => 'fas fa-clipboard-list', 'prefix' => 'gudang/opname-stok'],
+                                ['label' => 'Data Barang', 'url' => 'gudang/barang', 'icon' => 'ti ti-packages', 'prefix' => 'gudang/barang'],
+                                ['label' => 'Cek Permintaan', 'url' => 'gudang/cek-permintaan', 'icon' => 'ti ti-clipboard-check', 'prefix' => 'gudang/cek-permintaan'],
+                                ['label' => 'Opname Stok', 'url' => 'gudang/opname-stok', 'icon' => 'ti ti-clipboard-list', 'prefix' => 'gudang/opname-stok'],
                             ],
                         ],
                     ],
@@ -439,7 +439,7 @@ if (!function_exists('sistem_menu')) {
                 [
                     'judul' => 'Laporan',
                     'items' => [
-                        ['label' => 'Rekap Persediaan', 'url' => 'laporan/rekap-persediaan', 'icon' => 'fa-solid fa-chart-column', 'prefix' => 'laporan/rekap-persediaan'],
+                        ['label' => 'Rekap Persediaan', 'url' => 'laporan/rekap-persediaan', 'icon' => 'ti ti-chart-pie', 'prefix' => 'laporan/rekap-persediaan'],
                     ],
                 ],
                 [
@@ -448,22 +448,22 @@ if (!function_exists('sistem_menu')) {
                     'items' => [
                         [
                             'label'    => 'Master Keuangan',
-                            'icon'     => 'fas fa-box',
+                            'icon'     => 'ti ti-wallet',
                             'prefix'   => 'master/perkiraan|master/bank',
                             'children' => [
-                                ['label' => 'Perkiraan', 'url' => 'master/perkiraan', 'icon' => 'fas fa-box', 'prefix' => 'master/perkiraan'],
+                                ['label' => 'Perkiraan', 'url' => 'master/perkiraan', 'icon' => 'ti ti-report-money', 'prefix' => 'master/perkiraan'],
                                 // Master Bank disembunyikan: tabel `master_bank`
                                 // belum ada di db_pdam.
                             ],
                         ],
                         [
                             'label'    => 'Master Pegawai',
-                            'icon'     => 'fas fa-users',
+                            'icon'     => 'ti ti-id-badge',
                             'prefix'   => 'master/jabatan|master/pokok|master/tugas-pokok|master/pegawai',
                             'children' => [
-                                ['label' => 'Jabatan', 'url' => 'master/jabatan', 'icon' => 'fas fa-box', 'prefix' => 'master/jabatan'],
-                                ['label' => 'Tugas Pokok', 'url' => 'master/pokok', 'icon' => 'fas fa-box', 'prefix' => 'master/pokok|master/tugas-pokok'],
-                                ['label' => 'Data Pegawai', 'url' => 'master/pegawai', 'icon' => 'fas fa-box', 'prefix' => 'master/pegawai'],
+                                ['label' => 'Jabatan', 'url' => 'master/jabatan', 'icon' => 'ti ti-hierarchy', 'prefix' => 'master/jabatan'],
+                                ['label' => 'Tugas Pokok', 'url' => 'master/pokok', 'icon' => 'ti ti-list-details', 'prefix' => 'master/pokok|master/tugas-pokok'],
+                                ['label' => 'Data Pegawai', 'url' => 'master/pegawai', 'icon' => 'ti ti-users', 'prefix' => 'master/pegawai'],
                             ],
                         ],
                     ],
@@ -472,8 +472,8 @@ if (!function_exists('sistem_menu')) {
                     'judul' => 'Administrasi',
                     'admin' => true,
                     'items' => [
-                        ['label' => 'User/Akun', 'url' => 'master/akun', 'icon' => 'fas fa-user-cog', 'id' => 'akun_menu', 'prefix' => 'master/akun'],
-                        ['label' => 'Absensi', 'url' => 'absensi', 'icon' => 'fa-solid fa-file-contract', 'id' => 'absensi_menu', 'prefix' => 'absensi'],
+                        ['label' => 'User/Akun', 'url' => 'master/akun', 'icon' => 'ti ti-shield-lock', 'id' => 'akun_menu', 'prefix' => 'master/akun'],
+                        ['label' => 'Absensi', 'url' => 'absensi', 'icon' => 'ti ti-calendar-stats', 'id' => 'absensi_menu', 'prefix' => 'absensi'],
                     ],
                 ],
             ];
@@ -490,7 +490,7 @@ if (!function_exists('sistem_menu')) {
             [
                 'judul' => 'Billing',
                 'items' => [
-                    ['label' => 'Pelanggan', 'url' => 'pelanggan', 'icon' => 'fas fa-users', 'id' => 'pelanggan_menu', 'prefix' => 'pelanggan'],
+                    ['label' => 'Pelanggan', 'url' => 'pelanggan', 'icon' => 'ti ti-users', 'id' => 'pelanggan_menu', 'prefix' => 'pelanggan'],
                 ],
             ],
             [
@@ -499,22 +499,22 @@ if (!function_exists('sistem_menu')) {
                 'items' => [
                     [
                         'label'    => 'Master Pelanggan',
-                        'icon'     => 'fas fa-users',
+                        'icon'     => 'ti ti-user-circle',
                         'prefix'   => 'master/pelanggan|master/pasang-meter|master/set-kelompok-tarif|master/set-jenis-pelanggan',
                         'children' => [
-                            ['label' => 'Daftar Pelanggan', 'url' => 'master/pelanggan', 'icon' => 'fas fa-cogs', 'prefix' => 'master/pelanggan'],
-                            ['label' => 'Kelompok Tarif', 'url' => 'master/set-kelompok-tarif', 'icon' => 'fas fa-cogs', 'prefix' => 'master/set-kelompok-tarif'],
-                            ['label' => 'Jenis Pelanggan', 'url' => 'master/set-jenis-pelanggan', 'icon' => 'fas fa-users', 'prefix' => 'master/set-jenis-pelanggan'],
+                            ['label' => 'Daftar Pelanggan', 'url' => 'master/pelanggan', 'icon' => 'ti ti-users', 'prefix' => 'master/pelanggan'],
+                            ['label' => 'Kelompok Tarif', 'url' => 'master/set-kelompok-tarif', 'icon' => 'ti ti-tags', 'prefix' => 'master/set-kelompok-tarif'],
+                            ['label' => 'Jenis Pelanggan', 'url' => 'master/set-jenis-pelanggan', 'icon' => 'ti ti-copy', 'prefix' => 'master/set-jenis-pelanggan'],
                         ],
                     ],
                     [
                         'label'    => 'Master Wilayah',
-                        'icon'     => 'fas fa-location-dot',
+                        'icon'     => 'ti ti-map-pins',
                         'prefix'   => 'master/kabupaten|master/kecamatan|master/kelurahan',
                         'children' => [
-                            ['label' => 'Kabupaten', 'url' => 'master/kabupaten', 'icon' => 'fas fa-location-dot', 'prefix' => 'master/kabupaten'],
-                            ['label' => 'Kecamatan', 'url' => 'master/kecamatan', 'icon' => 'fas fa-location-dot', 'prefix' => 'master/kecamatan'],
-                            ['label' => 'Kelurahan', 'url' => 'master/kelurahan', 'icon' => 'fas fa-location-dot', 'prefix' => 'master/kelurahan'],
+                            ['label' => 'Kabupaten', 'url' => 'master/kabupaten', 'icon' => 'ti ti-building-community', 'prefix' => 'master/kabupaten'],
+                            ['label' => 'Kecamatan', 'url' => 'master/kecamatan', 'icon' => 'ti ti-map-2', 'prefix' => 'master/kecamatan'],
+                            ['label' => 'Kelurahan', 'url' => 'master/kelurahan', 'icon' => 'ti ti-map-pin', 'prefix' => 'master/kelurahan'],
                         ],
                     ],
                 ],
@@ -522,18 +522,18 @@ if (!function_exists('sistem_menu')) {
             [
                 'judul' => 'Laporan',
                 'items' => [
-                    ['label' => 'DRD Air', 'url' => 'laporan/drd-air', 'icon' => 'fa-solid fa-chart-column', 'prefix' => 'laporan/drd-air'],
-                    ['label' => 'DRD Unit/Jenis', 'url' => 'laporan/rekap-drd-air', 'icon' => 'fa-solid fa-chart-column', 'prefix' => 'laporan/rekap-drd-air'],
-                    ['label' => 'Rincian Piutang Perunit', 'url' => 'laporan/rincian-piutang-perunit', 'icon' => 'fa-solid fa-chart-column', 'prefix' => 'laporan/rincian-piutang-perunit'],
-                    ['label' => 'Pelanggan Duplikat', 'url' => 'laporan/pelanggan-duplikat', 'icon' => 'fa-solid fa-chart-column', 'prefix' => 'laporan/pelanggan-duplikat'],
-                    ['label' => 'Rekapitulasi Piutang', 'url' => 'laporan/rekapitulasi-piutang', 'icon' => 'fa-solid fa-chart-column', 'prefix' => 'laporan/rekapitulasi-piutang'],
+                    ['label' => 'DRD Air', 'url' => 'laporan/drd-air', 'icon' => 'ti ti-droplet', 'prefix' => 'laporan/drd-air'],
+                    ['label' => 'DRD Unit/Jenis', 'url' => 'laporan/rekap-drd-air', 'icon' => 'ti ti-chart-pie', 'prefix' => 'laporan/rekap-drd-air'],
+                    ['label' => 'Rincian Piutang Perunit', 'url' => 'laporan/rincian-piutang-perunit', 'icon' => 'ti ti-chart-dots', 'prefix' => 'laporan/rincian-piutang-perunit'],
+                    ['label' => 'Pelanggan Duplikat', 'url' => 'laporan/pelanggan-duplikat', 'icon' => 'ti ti-file-analytics', 'prefix' => 'laporan/pelanggan-duplikat'],
+                    ['label' => 'Rekapitulasi Piutang', 'url' => 'laporan/rekapitulasi-piutang', 'icon' => 'ti ti-report-analytics', 'prefix' => 'laporan/rekapitulasi-piutang'],
                 ],
             ],
             [
                 'judul' => 'Administrasi',
                 'admin' => true,
                 'items' => [
-                    ['label' => 'User/Akun', 'url' => 'master/akun', 'icon' => 'fas fa-user-cog', 'id' => 'akun_menu', 'prefix' => 'master/akun'],
+                    ['label' => 'User/Akun', 'url' => 'master/akun', 'icon' => 'ti ti-shield-lock', 'id' => 'akun_menu', 'prefix' => 'master/akun'],
                 ],
             ],
         ];

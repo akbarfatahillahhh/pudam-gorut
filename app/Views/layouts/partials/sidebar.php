@@ -26,6 +26,18 @@ $aktif = static function (string $prefix) use ($path): bool {
     return false;
 };
 ?>
+<style>
+    /* Ikon submenu pakai Tabler, samakan ukuran dengan menu utama. */
+    .sidebar-nav .list-group-item .ti {
+        font-size: 18px;
+        vertical-align: -3px;
+    }
+
+    .sidebar-nav .list-group-item i {
+        width: 18px;
+        text-align: center;
+    }
+</style>
 <aside class="left-sidebar border-dark">
     <div>
         <div class="brand-logo d-flex align-items-center justify-content-between">
@@ -35,7 +47,7 @@ $aktif = static function (string $prefix) use ($path): bool {
                 <span class="h6 fw-bolder align-middle">GORUT</span>
             </a>
             <div class="close-btn d-xl-none d-block sidebartoggler cursor-pointer" id="sidebarCollapse">
-                <i class="fas fa-times fs-5 text-black"></i>
+                <i class="ti ti-x fs-5 text-black"></i>
             </div>
         </div>
         <nav class="sidebar-nav scroll-sidebar" data-simplebar="">
@@ -69,7 +81,7 @@ $aktif = static function (string $prefix) use ($path): bool {
                                             <li class="list-group-item">
                                                 <a href="<?= base_url($anak['url']) ?>"
                                                     class="pointer <?= $aktif($anak['prefix'] ?? $anak['url']) ? 'text-primary' : 'text-dark' ?>">
-                                                    <i class="<?= esc($anak['icon'] ?? 'fas fa-circle', 'attr') ?> pe-2"></i>
+                                                    <i class="<?= esc($anak['icon'] ?? 'ti ti-point', 'attr') ?> pe-2"></i>
                                                     <?= esc($anak['label']) ?>
                                                 </a>
                                             </li>

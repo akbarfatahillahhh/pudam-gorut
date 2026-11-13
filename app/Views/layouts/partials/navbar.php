@@ -10,7 +10,7 @@ $iconAktif    = $daftarSistem[$sistemAktif]['icon'] ?? 'fas fa-layer-group';
         <ul class="navbar-nav">
             <li class="nav-item d-block d-xl-none">
                 <a class="nav-link sidebartoggler nav-icon-hover" id="headerCollapse" href="javascript:void(0)">
-                    <i class="fas fa-bars"></i>
+                    <i class="ti ti-menu-2"></i>
                 </a>
             </li>
         </ul>
@@ -26,13 +26,12 @@ $iconAktif    = $daftarSistem[$sistemAktif]['icon'] ?? 'fas fa-layer-group';
                     </li>
                 <?php else: ?>
                     <li class="nav-item dropdown me-3">
-                        <a class="nav-link d-flex align-items-center gap-1 px-2" href="javascript:void(0)"
+                        <a class="nav-link d-flex align-items-center px-2" href="javascript:void(0)"
                             id="dropdownSistem" data-bs-toggle="dropdown" aria-expanded="false" title="Ganti modul">
                             <span class="badge bg-dark fs-2 text-uppercase px-3 py-2">
                                 <i class="<?= esc($iconAktif, 'attr') ?> me-1"></i>
                                 <?= esc($labelAktif) ?>
                             </span>
-                            <i class="ti ti-chevron-down fs-4 text-black"></i>
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end border-dark" aria-labelledby="dropdownSistem">
                             <li class="px-3 pt-2 pb-1">
@@ -43,7 +42,7 @@ $iconAktif    = $daftarSistem[$sistemAktif]['icon'] ?? 'fas fa-layer-group';
                                     href="<?= sistem_home_url($sistemAktif) ?>">
                                     <i class="<?= esc($iconAktif, 'attr') ?>"></i>
                                     <span class="flex-grow-1"><?= esc($labelAktif) ?></span>
-                                    <i class="fas fa-check text-success"></i>
+                                    <i class="ti ti-check text-success"></i>
                                 </a>
                             </li>
                             <?php foreach ($sistemLain as $sistem): ?>

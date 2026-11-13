@@ -1,0 +1,30 @@
+# cloudflared ingress — pudam_ekas (CodeIgniter 4, pod "pudam-ekas")
+#
+# Tunnel: pudam (c00e3775-...). SATU connector untuk tunnel ini, jadi semua
+# hostname harus ada di file ini. Deploy lama (mywater, port 8091) tetap dilayani
+# dari connector yang sama agar tidak ada request yang nyasar ke connector tanpa rule.
+#
+# Jalankan: systemctl --user restart pudam-cloudflared
+#   atau  : cloudflared --config /home/reev/project/pudam_ekas/cloudflared.yml tunnel run
+#
+# ATURAN: baris `- service: http_status:404` HARUS paling akhir.
+
+tunnel: c00e3775-2a63-4f05-9b6e-7dcf9c555d44
+credentials-file: /home/reev/.cloudflared/c00e3775-2a63-4f05-9b6e-7dcf9c555d44.json
+
+ingress:
+  # project ini
+  - hostname: pudam.digiagent.web.id
+    service: http://localhost:8092
+    originRequest:
+      connectTimeout: 30s
+      noHappyEyeballs: true
+
+  # deploy lama, jangan dihapus selama masih dipakai
+  - hostname: mywater.digiagent.web.id
+    service: http://localhost:8091
+    originRequest:
+      connectTimeout: 30s
+      noHappyEyeballs: true
+
+  - service: http_status:404

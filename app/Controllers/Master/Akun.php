@@ -151,38 +151,36 @@ class Akun extends BaseController
         $id_session = $this->request->getPost('id_session');
         $data['id_session'] = $id_session;
 
-        // Ambil data menu dari database
-        $delete = $this->db->table('t_user_akses')
-            ->where('id_session', $id_session)
-            ->delete();
-
-        $row = $this->db->table('t_user_akses')
+        $user = $this->db->table('users')
+            ->select('nama_lengkap, level')
             ->where('id_session', $id_session)
             ->get()
             ->getRowArray();
 
-        // Daftar semua nama menu
-        $menu_list = [
-            'perkiraan', 'jabatan', 'tugas_pokok', 'data_pegawai',
-            'daftar_pelanggan', 'kelompok_tarif', 'jenis_pelanggan',
-            'kabupaten', 'kecamatan', 'kelurahan', 'user_akun', 'absensi',
-            'faktur_pembelian', 'entry_permintaan', 'data_barang', 'cek_permintaan',
-            'opname_stok', 'pelanggan', 'kas_pengeluaran', 'riwayat_kas_pengeluaran',
-            'penerimaan_kas_air', 'penerimaan_kas_non_air', 'drd_air', 'drd_unit_jenis',
-            'rincian_piutang_perunit', 'pelanggan_duplikat', 'rekapitulasi_piutang',
-            'rekap_persediaan'
-        ];
+        $data['nama_lengkap'] = $user['nama_lengkap'] ?? '-';
+        $data['level'] = $user['level'] ?? '-';
 
-        $checked_menu = [];
+        $daftar = sistem_daftar();
+        $akses = [];
 
-        if (!empty($row['menu'])) {
-            $checked_menu = json_decode($row['menu'], true); // array hasil decode JSON
+        if ($data['level'] === 'admin') {
+            // Admin selalu punya akses ke semua sistem (lihat sistem_akses_user()).
+            $akses = array_keys($daftar);
+        } elseif (!empty($id_session)) {
+            $rows = $this->db->table('t_akses_sistem')
+                ->select('sistem')
+                ->where('id_session', $id_session)
+                ->get()
+                ->getResultArray();
+
+            $akses = array_column($rows, 'sistem');
         }
 
-        // Loop menu dan isi data checked atau tidak
-        foreach ($menu_list as $menu_name) {
-            $data[$menu_name] = in_array($menu_name, $checked_menu) ? 'checked' : '';
-        }
+        // Buang kode sistem yang tidak dikenal.
+        $data['akses'] = array_values(array_filter($akses, static function ($sistem) use ($daftar) {
+            return isset($daftar[$sistem]);
+        }));
+        $data['daftar_sistem'] = $daftar;
 
         $html = ['html' => view('/master/akun/modal/setting_akses', $data)];
         echo json_encode($html);
@@ -192,22 +190,36 @@ class Akun extends BaseController
     public function save_setting_akses()
     {
         $id_session = $this->request->getPost('id_session');
-        $menu = $this->request->getPost('menu');
-        
-        if (!$menu || !$id_session) {
+        $sistem = $this->request->getPost('sistem');
+
+        if (empty($id_session)) {
             return $this->response->setJSON([
                 'status' => 'error',
                 'message' => 'Data tidak lengkap.'
             ]);
         }
 
-        $data_menu = json_encode($menu);
+        $daftar = sistem_daftar();
+        $sistem = is_array($sistem) ? $sistem : [];
+        $sistem = array_values(array_unique(array_filter($sistem, static function ($kode) use ($daftar) {
+            return is_string($kode) && isset($daftar[$kode]);
+        })));
 
-        $this->db->table('t_user_akses')->insert([
-            'id_session' => $id_session,
-            'menu' => $data_menu
-        ]);
-        
+        // Simpan ulang: hapus dulu semua akses lama user ini.
+        $this->db->table('t_akses_sistem')->where('id_session', $id_session)->delete();
+
+        // Array kosong berarti user tidak punya akses ke sistem mana pun.
+        if (!empty($sistem)) {
+            $rows = [];
+            foreach ($sistem as $kode) {
+                $rows[] = [
+                    'id_session' => $id_session,
+                    'sistem' => $kode,
+                ];
+            }
+            $this->db->table('t_akses_sistem')->insertBatch($rows);
+        }
+
         return $this->response->setJSON([
             'status' => 'success',
             'message' => 'Akses berhasil disimpan.'

@@ -928,7 +928,9 @@
                                 timer: 1200,
                                 showConfirmButton: false
                             }).then(function () {
-                                window.location.href = "<?= base_url('home') ?>"; // Sesuaikan redirect
+                                // Home::index mengarahkan ke dashboard sistem
+                                // yang boleh dibuka user (billing / kas).
+                                window.location.href = "<?= base_url('home') ?>";
                             });
                         } else {
                             Swal.fire({

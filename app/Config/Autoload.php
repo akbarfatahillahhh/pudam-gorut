@@ -84,5 +84,9 @@ class Autoload extends AutoloadConfig
      *
      * @var array<int, string>
      */
-    public $files = [];
+    public $files = [
+        // Fungsi pemisahan modul billing / kas (dipakai filter, sidebar,
+        // navbar, Home, Login, Master\Akun).
+        APPPATH . 'Helpers/sistem_helper.php',
+    ];
 }

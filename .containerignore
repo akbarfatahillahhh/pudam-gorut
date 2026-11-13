@@ -1,0 +1,10 @@
+db_pdam.sql
+db_pdam_fixed.sql
+writable/cache
+writable/logs
+writable/session
+writable/debugbar
+writable/uploads
+.git
+screenshots
+vendor

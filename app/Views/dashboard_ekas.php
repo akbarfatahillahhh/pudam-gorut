@@ -1,17 +1,17 @@
-<?= $this->extend('layouts/default') ?>
+<?= $this->extend('layouts/main_ekas') ?>
 <?= $this->section('content') ?>
 
 <div class="row">
 
-    <div class="col-lg-4">
+    <div class="col-lg-3">
         <div class="card overflow-hidden border border-dark">
             <div class="card-body p-4">
                 <h5 class="card-title mb-8 fw-semibold text-center">
-                    Total Rekening
+                    Voucher Kas Keluar
                 </h5>
                 <div class="row align-items-center">
                     <div class="col-12 text-center">
-                        <h4 class="fw-semibold mb-3 totalRekening">0</h4>
+                        <h4 class="fw-semibold mb-3 totalVoucher">0</h4>
                         <div class="d-flex align-items-center justify-content-center">
                             <div class="me-4">
                                 <span class="round-8 bg-primary rounded-circle me-2 d-inline-block"></span>
@@ -28,15 +28,15 @@
         </div>
     </div>
 
-    <div class="col-lg-4">
+    <div class="col-lg-3">
         <div class="card overflow-hidden border border-dark">
             <div class="card-body p-4">
                 <h5 class="card-title mb-8 fw-semibold text-center">
-                    Total Meter Di Catat
+                    Voucher Bulan Ini
                 </h5>
                 <div class="row align-items-center">
                     <div class="col-12 text-center">
-                        <h4 class="fw-semibold mb-3 totalMeterDiCatat">0</h4>
+                        <h4 class="fw-semibold mb-3 totalVoucherBulanIni">0</h4>
                         <div class="d-flex align-items-center justify-content-center">
                             <div class="me-4">
                                 <span class="round-8 bg-primary rounded-circle me-2 d-inline-block"></span>
@@ -53,15 +53,40 @@
         </div>
     </div>
 
-    <div class="col-lg-4">
+    <div class="col-lg-3">
         <div class="card overflow-hidden border border-dark">
             <div class="card-body p-4">
                 <h5 class="card-title mb-8 fw-semibold text-center">
-                    Total Di Tagih
+                    Data Barang
                 </h5>
                 <div class="row align-items-center">
                     <div class="col-12 text-center">
-                        <h4 class="fw-semibold mb-3 totalDiTagih">Rp. 0</h4>
+                        <h4 class="fw-semibold mb-3 totalBarang">0</h4>
+                        <div class="d-flex align-items-center justify-content-center">
+                            <div class="me-4">
+                                <span class="round-8 bg-primary rounded-circle me-2 d-inline-block"></span>
+                                <span class="fs-2 text-black"><?= date('01 M Y') ?></span>
+                            </div>
+                            <div>
+                                <span class="round-8 bg-success rounded-circle me-2 d-inline-block"></span>
+                                <span class="fs-2 text-black"><?= date('d M Y') ?></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-3">
+        <div class="card overflow-hidden border border-dark">
+            <div class="card-body p-4">
+                <h5 class="card-title mb-8 fw-semibold text-center">
+                    Permintaan Menunggu
+                </h5>
+                <div class="row align-items-center">
+                    <div class="col-12 text-center">
+                        <h4 class="fw-semibold mb-3 totalPermintaan">0</h4>
                         <div class="d-flex align-items-center justify-content-center">
                             <div class="me-4">
                                 <span class="round-8 bg-primary rounded-circle me-2 d-inline-block"></span>
@@ -80,31 +105,29 @@
 
 </div>
 
-<div>
-    <div class="card overflow-hidden border border-dark">
-        <div class="card-body p-4">
-            <div class="border-bottom border-dark pb-3">
-                <ul class="nav nav-pills nav-justified">
-                    <li class="nav-item">
-                        <button type="button" class="nav-link active tab-page" data-page="lpp_penagih" aria-current="page">LPP PENAGIH</button>
-                    </li>
-                    <li class="nav-item">
-                        <button type="button" class="nav-link tab-page" data-page="lpp_bms_fastpay">LPP BMS FASTPAY</button>
-                    </li>
-                    <li class="nav-item">
-                        <button type="button" class="nav-link tab-page" data-page="catat_meter">CATAT METER</button>
-                    </li>
-                    <li class="nav-item">
-                        <button type="button" class="nav-link tab-page" data-page="lpp_unit">LPP UNIT</button>
-                    </li>
-                    <li class="nav-item">
-                        <button type="button" class="nav-link tab-page" data-page="laporan_aktivitas_pcm">LAPORAN AKTIFITAS PCM</button>
-                    </li>
-                </ul>
+<div class="row">
+    <div class="col-12">
+        <div class="card overflow-hidden border border-dark">
+            <div class="card-body p-4">
+                <h5 class="card-title mb-3 fw-semibold">Menu Cepat E-Kas</h5>
+                <div class="d-flex flex-wrap gap-2">
+                    <a href="<?= base_url('e-kas/keluar') ?>" class="btn btn-sm btn-primary">
+                        <i class="fa-solid fa-money-bill-transfer me-1"></i> Kas Pengeluaran
+                    </a>
+                    <a href="<?= base_url('e-kas/riwayat') ?>" class="btn btn-sm btn-outline-primary">
+                        <i class="fas fa-history me-1"></i> Riwayat Kas
+                    </a>
+                    <a href="<?= base_url('faktur-pembelian') ?>" class="btn btn-sm btn-outline-dark">
+                        <i class="fa-solid fa-right-to-bracket me-1"></i> Faktur Pembelian
+                    </a>
+                    <a href="<?= base_url('gudang/opname-stok') ?>" class="btn btn-sm btn-outline-dark">
+                        <i class="fas fa-clipboard-list me-1"></i> Opname Stok
+                    </a>
+                    <a href="<?= base_url('laporan/rekap-persediaan') ?>" class="btn btn-sm btn-outline-dark">
+                        <i class="fa-solid fa-chart-column me-1"></i> Rekap Persediaan
+                    </a>
+                </div>
             </div>
-
-            <div class="pt-3" id="page-dashboard"></div>
-
         </div>
     </div>
 </div>
@@ -114,51 +137,27 @@
 <?= $this->section('script') ?>
 <script>
     $(document).ready(function() {
-        loadDataForCard();
-        loadPage('lpp_penagih');
-
-        $('.tab-page').click(function(e) {
-            e.preventDefault();
-            var page = $(this).data('page');
-            loadPage(page).then(() => {
-                $('.tab-page').removeClass('active');
-                $(this).addClass('active');
-            })
-        });
-    });
-
-
-    async function loadPage(page) {
-        try {
-            const response = await $.ajax({
-                type: "get",
-                url: "<?= base_url('Home/page/') ?>/" + page,
-                dataType: "json",
-            });
-            $('#page-dashboard').html(response.page);
-        } catch (error) {
-            console.error(error);
-        }
-    }
-
-    function loadDataForCard() {
         $.ajax({
             type: "get",
-            url: "<?= base_url('Home/get_data_for_card') ?>",
+            url: "<?= base_url('Home/get_data_for_card_ekas') ?>",
             dataType: "json",
             success: function(response) {
-                $('.totalRekening').html(formatIdr(response.total_rekening));
-                $('.totalMeterDiCatat').html(formatIdr(response.total_catat_meter));
-                $('.totalDiTagih').html('Rp. ' + formatIdr(response.total_di_tagih));
+                $('.totalVoucher').html(formatIdr(response.total_voucher));
+                $('.totalVoucherBulanIni').html(formatIdr(response.total_voucher_bulan_ini));
+                $('.totalBarang').html(formatIdr(response.total_barang));
+                $('.totalPermintaan').html(formatIdr(response.total_permintaan));
+            },
+            error: function() {
+                // Biarkan angka 0 kalau data belum tersedia.
             }
         });
-    }
+    });
 
     function formatIdr(number) {
         return new Intl.NumberFormat('id-ID', {
             style: 'decimal',
             minimumFractionDigits: 0
-        }).format(number);
+        }).format(number || 0);
     }
 </script>
 <?= $this->endSection() ?>

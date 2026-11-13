@@ -13,29 +13,50 @@ class Home extends BaseController
 
     public function index()
     {
-        return view('landing_page');
+        // Dulu menampilkan landing_page (template contoh, bukan bagian
+        // aplikasi). Sekarang langsung ke dashboard sistem yang boleh
+        // dibuka user.
+        return redirect()->to(sistem_home_url(sistem_aktif()));
     }
 
     public function ekas()
     {
-        return view('dashboard_ekas');
+        $data['sistem'] = SISTEM_KAS;
+
+        return view('dashboard_ekas', $data);
     }
 
     public function billing()
     {
-        return view('dashboard_billing');
+        $data['sistem'] = SISTEM_BILLING;
+
+        return view('dashboard_billing', $data);
     }
 
     public function get_sidebar()
     {
-        $id_session = session()->get('id_session');
+        $sistem = sistem_aktif();
 
-        $row = $this->db->table('t_user_akses')
-            ->where('id_session', $id_session)
-            ->get()
-            ->getRowArray();
+        $menu = [];
 
-        echo json_encode(['menu' => $row['menu'] ?? '[]']);
+        foreach (sistem_menu($sistem) as $grup) {
+            if (!empty($grup['admin']) && session('level') !== 'admin') {
+                continue;
+            }
+
+            foreach ($grup['items'] as $item) {
+                $menu[] = $item;
+
+                foreach ($item['children'] ?? [] as $anak) {
+                    $menu[] = $anak;
+                }
+            }
+        }
+
+        echo json_encode([
+            'sistem' => $sistem,
+            'menu'   => json_encode(array_values(array_filter(array_column($menu, 'id')))),
+        ]);
     }
 
     public function page($page = null)
@@ -75,6 +96,36 @@ class Home extends BaseController
 
         $msg = ['page' => view('dashboard/pdf', $data)];
         echo json_encode($msg);
+    }
+
+    public function get_data_for_card_ekas()
+    {
+        $awalBulan = date('Y-m-01');
+        $akhirBulan = date('Y-m-t');
+
+        $totalVoucher = $this->db->table('akun_kas_keluar')
+            ->where('STATUS', 'Y')
+            ->countAllResults();
+
+        $totalVoucherBulanIni = $this->db->table('akun_kas_keluar')
+            ->where('STATUS', 'Y')
+            ->where('TANGGAL >=', $awalBulan)
+            ->where('TANGGAL <=', $akhirBulan)
+            ->countAllResults();
+
+        $totalBarang = $this->db->table('logistik_barang')->countAllResults();
+
+        // Permintaan yang belum diverifikasi gudang (status 'P').
+        $totalPermintaan = $this->db->table('logistik_permintaan_cek')
+            ->where('status', 'P')
+            ->countAllResults();
+
+        echo json_encode([
+            'total_voucher'            => $totalVoucher,
+            'total_voucher_bulan_ini'  => $totalVoucherBulanIni,
+            'total_barang'             => $totalBarang,
+            'total_permintaan'         => $totalPermintaan,
+        ]);
     }
 
     public function get_data_for_card()

@@ -60,8 +60,9 @@ if (!function_exists('sistem_peta_prefix')) {
      * Peta prefix URI -> sistem. Prefix dicocokkan dari yang paling
      * panjang, jadi 'master/pelanggan' menang atas 'pelanggan'.
      *
-     * Nilai SISTEM_ADMIN berarti modul hanya untuk level admin
-     * (dipakai di kedua sistem).
+     * Tiap path WAJIB menunjuk sistem nyata (billing/kas) supaya konteks
+     * sistem tidak hilang saat membuka halaman. Pembatasan khusus admin
+     * ditangani terpisah lewat sistem_prefix_admin().
      */
     function sistem_peta_prefix(): array
     {
@@ -72,13 +73,13 @@ if (!function_exists('sistem_peta_prefix')) {
             'pelanggan'                      => SISTEM_BILLING,
 
             // master billing
-            'master/pelanggan'               => SISTEM_ADMIN,
-            'master/pasang-meter'            => SISTEM_ADMIN,
-            'master/set-kelompok-tarif'      => SISTEM_ADMIN,
-            'master/set-jenis-pelanggan'     => SISTEM_ADMIN,
-            'master/kabupaten'               => SISTEM_ADMIN,
-            'master/kecamatan'               => SISTEM_ADMIN,
-            'master/kelurahan'               => SISTEM_ADMIN,
+            'master/pelanggan'               => SISTEM_BILLING,
+            'master/pasang-meter'            => SISTEM_BILLING,
+            'master/set-kelompok-tarif'      => SISTEM_BILLING,
+            'master/set-jenis-pelanggan'     => SISTEM_BILLING,
+            'master/kabupaten'               => SISTEM_BILLING,
+            'master/kecamatan'               => SISTEM_BILLING,
+            'master/kelurahan'               => SISTEM_BILLING,
 
             // laporan billing
             'laporan/drd-air'                => SISTEM_BILLING,
@@ -99,22 +100,72 @@ if (!function_exists('sistem_peta_prefix')) {
             'faktur-pembelian'               => SISTEM_KAS,
 
             // master kas
-            'master/perkiraan'               => SISTEM_ADMIN,
-            'master/bank'                    => SISTEM_ADMIN,
-            'master/jabatan'                 => SISTEM_ADMIN,
-            'master/tugas-pokok'             => SISTEM_ADMIN,
-            'master/pokok'                   => SISTEM_ADMIN,
-            'master/pegawai'                 => SISTEM_ADMIN,
+            'master/perkiraan'               => SISTEM_KAS,
+            'master/bank'                    => SISTEM_KAS,
+            'master/jabatan'                 => SISTEM_KAS,
+            'master/tugas-pokok'             => SISTEM_KAS,
+            'master/pokok'                   => SISTEM_KAS,
+            'master/pegawai'                 => SISTEM_KAS,
 
             // laporan kas
             'laporan/rekap-persediaan'       => SISTEM_KAS,
 
             // kepegawaian -> ikut kas
             'absensi'                        => SISTEM_KAS,
-
-            // ===== ADMIN (berlaku di kedua sistem) =====
-            'master/akun'                    => SISTEM_ADMIN,
         ];
+    }
+}
+
+if (!function_exists('sistem_prefix_admin')) {
+    /**
+     * Prefix yang hanya boleh dibuka users.level = 'admin'.
+     *
+     * Modul di sini tetap milik sistem tertentu (lihat sistem_peta_prefix)
+     * supaya sidebar tetap di sistem yang benar; yang dibatasi hanya
+     * hak buka untuk non-admin.
+     */
+    function sistem_prefix_admin(): array
+    {
+        return [
+            'master/pelanggan',
+            'master/pasang-meter',
+            'master/set-kelompok-tarif',
+            'master/set-jenis-pelanggan',
+            'master/kabupaten',
+            'master/kecamatan',
+            'master/kelurahan',
+            'master/perkiraan',
+            'master/bank',
+            'master/jabatan',
+            'master/tugas-pokok',
+            'master/pokok',
+            'master/pegawai',
+            'master/akun',
+        ];
+    }
+}
+
+if (!function_exists('sistem_wajib_admin')) {
+    /**
+     * Apakah path ini hanya untuk admin.
+     */
+    function sistem_wajib_admin(?string $path): bool
+    {
+        $path = sistem_normalisasi_path($path);
+
+        if ($path === '') {
+            return false;
+        }
+
+        foreach (sistem_prefix_admin() as $prefix) {
+            $prefix = sistem_normalisasi_path($prefix);
+
+            if ($path === $prefix || strpos($path, $prefix . '/') === 0) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }
 
@@ -225,14 +276,10 @@ if (!function_exists('sistem_akses_user')) {
 
 if (!function_exists('sistem_boleh')) {
     /**
-     * Cek apakah user sekarang boleh membuka sistem/modul tertentu.
+     * Cek apakah user sekarang boleh membuka sistem tertentu.
      */
     function sistem_boleh(string $sistem): bool
     {
-        if ($sistem === SISTEM_ADMIN) {
-            return session('level') === 'admin';
-        }
-
         if (!isset(sistem_daftar()[$sistem])) {
             return false;
         }
@@ -245,10 +292,37 @@ if (!function_exists('sistem_boleh')) {
     }
 }
 
+if (!function_exists('sistem_boleh_path')) {
+    /**
+     * Cek hak akses untuk sebuah path URI: sistemnya harus boleh dibuka
+     * user, dan kalau path itu modul admin, levelnya harus admin.
+     */
+    function sistem_boleh_path(string $path): bool
+    {
+        if (sistem_wajib_admin($path) && session('level') !== 'admin') {
+            return false;
+        }
+
+        $sistem = sistem_dari_path($path);
+
+        if ($sistem === null) {
+            return true;
+        }
+
+        return sistem_boleh($sistem);
+    }
+}
+
 if (!function_exists('sistem_aktif')) {
     /**
-     * Sistem yang sedang dipakai, ditentukan dari URI. Kalau URI tidak
-     * terikat sistem, pakai sistem pertama yang boleh diakses user.
+     * Sistem yang sedang dipakai.
+     *
+     * Urutan penentuan:
+     *   1. dari URI (semua path modul sudah dipetakan ke billing/kas)
+     *   2. sistem terakhir yang dibuka (disimpan FilterSistem di session),
+     *      supaya halaman non-modul seperti /Home/get_sidebar tidak
+     *      melempar sidebar kembali ke billing
+     *   3. sistem pertama yang boleh dibuka user
      */
     function sistem_aktif(?string $path = null): string
     {
@@ -262,8 +336,14 @@ if (!function_exists('sistem_aktif')) {
 
         $sistem = sistem_dari_path($path);
 
-        if ($sistem !== null && $sistem !== SISTEM_ADMIN) {
+        if ($sistem !== null) {
             return $sistem;
+        }
+
+        $tersimpan = session('sistem_aktif');
+
+        if (!empty($tersimpan) && isset(sistem_daftar()[$tersimpan]) && sistem_boleh($tersimpan)) {
+            return $tersimpan;
         }
 
         $akses = sistem_akses_user();

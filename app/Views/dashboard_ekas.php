@@ -1,4 +1,4 @@
-<?= $this->extend('layouts/default') ?>
+<?= $this->extend('layouts/main_ekas') ?>
 <?= $this->section('content') ?>
 
 <div class="row">

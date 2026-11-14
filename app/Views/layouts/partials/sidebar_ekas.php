@@ -23,9 +23,6 @@
                     <span class="hide-menu">MASTER DATA</span>
                 </li>
                 <?= $this->include('layouts/partials/menu/master/ekas/menu'); ?>
-                <?= $this->include('layouts/partials/menu/master/bs/menu'); ?>
-                <?= $this->include('layouts/partials/menu/master/wilayah/menu'); ?>
-                <?= $this->include('layouts/partials/menu/master/bank/menu'); ?>
 
                 <li class="nav-small-cap">
                     <i class="ti ti-dots nav-small-cap-icon fs-4"></i>

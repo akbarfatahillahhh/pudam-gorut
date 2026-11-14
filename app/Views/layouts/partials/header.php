@@ -47,7 +47,7 @@
         --bg-body: #f8fafc; /* Abu-abu kebiruan sangat lembut */
         --text-dark: #1e293b;
         --text-muted: #64748b;
-        --border-color: #e2e8f0;
+        --border-color: #d4d4d4;
     }
 
     body {
@@ -58,7 +58,8 @@
         -webkit-font-smoothing: antialiased;
     }
 
-    h1, h2, h3, h4, h5, h6 {
+    h1, h2, h3, h4, h5, h6,
+    thead {
         font-family: 'Fraunces', serif !important;
         color: #0c4a6e !important;
     }
@@ -195,8 +196,7 @@
 
     /* 6. TABEL (Paling Krusial) */
     .table-responsive {
-        border-radius: 12px;
-        border: 1px solid var(--border-color);
+        border-radius: 0px;
         background: #fff;
     }
     .table thead th {
@@ -206,12 +206,12 @@
         font-weight: 700;
         letter-spacing: 0.5px;
         border-bottom: 2px solid #e2e8f0 !important;
-        padding: 16px !important;
+        padding: 3px 5px;
     }
     .table tbody td {
-        padding: 16px !important;
+        padding: 3px 5px;
         border-bottom: 1px solid #f1f5f9 !important;
-        font-size: 13px;
+        font-size: 11px;
         color: var(--text-dark);
         font-weight: 500;
         vertical-align: middle;
@@ -251,32 +251,143 @@
         color: var(--text-dark);
     }
 
-    /* 7. FORM & BUTTON */
-    .form-control {
-        border: 1px solid #cbd5e1;
+    .btn {
         border-radius: 8px;
-        font-size: 13px;
-        font-weight: 500;
-        padding: 10px 14px;
+        padding-right: 8px;
+        padding-left: 8px;
+        font-size: 11px;
     }
-    .form-control:focus {
-        border-color: #38bdf8 !important;
-        box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.15) !important;
+
+    /* =====================================================
+    7. FORM CONTROLS (INPUT & SELECT STANDAR)
+    ===================================================== */
+    .form-control,
+    input[type="text"],
+    input[type="search"],
+    select.form-control {
+        display: block;
+        width: 100%;
+        height: 35px !important; /* Kunci tinggi agar sama persis */
+        padding: 8px 14px !important;
+        font-size: 12px !important;
+        font-family: 'Plus Jakarta Sans', sans-serif !important;
+        font-weight: 500 !important;
+        color: var(--text-dark) !important;
+        background-color: #ffffff !important;
+        border: 1px solid var(--border-color) !important; /* Border abu-abu lembut */
+        border-radius: 8px !important;
+        transition: all 0.2s ease-in-out;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02) !important;
+        box-sizing: border-box !important;
+    }
+
+    /* Efek saat input diklik/fokus */
+    .form-control:focus,
+    input:focus,
+    select.form-control:focus {
+        border-color: var(--primary) !important;
+        box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.15) !important;
+        outline: none !important;
+    }
+
+    input::placeholder {
+        color: #94a3b8 !important;
+        font-weight: 400 !important;
+    }
+
+    /* =====================================================
+       8. SELECT2 CUSTOMIZATION (Tema Premium & Sejajar)
+       ===================================================== */
+    /* Container Utama Select2 */
+    .select2-container .select2-selection--single {
+        height: 35px !important; /* Samakan dengan input */
+        border: 1px solid var(--border-color) !important;
+        border-radius: 8px !important;
+        background-color: #ffffff !important;
+        transition: all 0.2s ease-in-out;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02) !important;
+        box-sizing: border-box !important;
+    }
+
+    /* Teks di dalam Select2 */
+    .select2-container--default .select2-selection--single .select2-selection__rendered {
+        line-height: 15px !important; /* 40px - 2px border */
+        padding-left: 3px !important;
+        padding-right: 30px !important;
+        color: var(--text-dark) !important;
+        font-size: 12px !important;
+        font-family: 'Plus Jakarta Sans', sans-serif !important;
+        font-weight: 500 !important;
+    }
+
+    /* Teks Placeholder Select2 (Pilih Grup Perkiraan) */
+    .select2-container--default .select2-selection--single .select2-selection__placeholder {
+        color: #94a3b8 !important;
+    }
+
+    /* Ikon Panah (Arrow) Select2 */
+    .select2-container--default .select2-selection--single .select2-selection__arrow {
+        height: 38px !important;
+        top: 0 !important;
+        right: 8px !important;
     }
     
-    /* Tombol PDF */
-    .btn-danger {
-        background: #fff1f2 !important;
-        color: #e11d48 !important;
-        border: 1px solid #fecdd3 !important;
-        border-radius: 8px;
-        font-weight: 600;
-        font-size: 13px;
-        box-shadow: 0 2px 4px rgba(225, 29, 72, 0.05);
+    .select2-container--default .select2-selection--single .select2-selection__arrow b {
+        border-color: #64748b transparent transparent transparent !important;
+        border-width: 5px 4px 0 4px !important;
+        margin-top: -2px !important;
     }
-    .btn-danger:hover {
-        background: #ffe4e6 !important;
-        transform: translateY(-1px);
+
+    /* State saat Select2 di-klik / fokus */
+    .select2-container--default.select2-container--focus .select2-selection--single,
+    .select2-container--default.select2-container--open .select2-selection--single {
+        border-color: var(--primary) !important;
+        box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.15) !important;
+    }
+
+    /* Dropdown Menu Select2 */
+    .select2-container--default .select2-dropdown {
+        border: 1px solid var(--border-color) !important;
+        border-radius: 8px !important;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08) !important;
+        overflow: hidden;
+        z-index: 1051;
+        margin-top: 4px;
+    }
+
+    /* Item Pilihan di Dropdown */
+    .select2-results__option {
+        padding: 10px 14px !important;
+        color: var(--text-dark) !important;
+        font-size: 12px !important;
+        font-family: 'Plus Jakarta Sans', sans-serif !important;
+    }
+
+    /* Item yang di-hover */
+    .select2-container--default .select2-results__option--highlighted[aria-selected] {
+        background-color: var(--primary) !important;
+        color: #ffffff !important;
+    }
+
+    /* Item yang sudah dipilih */
+    .select2-container--default .select2-results__option[aria-selected="true"] {
+        background-color: #eff6ff !important; 
+        color: var(--primary) !important;
+        font-weight: 700 !important;
+    }
+
+    /* CARD TITLE */
+    .card-title {
+        font-family: 'Plus Jakarta Sans', sans-serif !important; 
+        font-size: 11.5px !important;
+        font-weight: 700 !important;
+        color: var(--text-dark) !important;
+        letter-spacing: 1px;
+    }
+
+    .body-wrapper>.container-fluid, .body-wrapper>.container-lg, .body-wrapper>.container-md, .body-wrapper>.container-sm, .body-wrapper>.container-xl, .body-wrapper>.container-xxl {
+        padding-left: 15px;
+        padding-right: 15px;
     }
 </style>
 

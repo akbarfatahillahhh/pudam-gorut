@@ -25,12 +25,18 @@ $routes->post('/login', 'Login::login');
 // ROUTES BILLING SYSTEM
 $routes->get('/billing', 'Home::billing');
 // ROUTES BILLING SYSTEM
+
+// ROUTES EKAS SYSTEM
+$routes->group('ekas', function ($routes) {
+    $routes->get('/', 'Home::ekas');
+
+    $routes->get('master/perkiraan',   'Master\Perkiraan::index');
+    $routes->get('master/jabatan',     'Master\Jabatan::index');
+    $routes->get('master/tugas-pokok', 'Master\TugasPokok::index');
+    $routes->get('master/pegawai',     'Master\Pegawai::index');
+});
+// ROUTES EKAS SYSTEM
     
-// routes master e-kas
-$routes->get('/master/perkiraan', 'Master\Perkiraan::index');
-$routes->get('/master/jabatan', 'Master\Jabatan::index');
-$routes->get('/master/tugas-pokok', 'Master\TugasPokok::index');
-$routes->get('/master/pegawai', 'Master\Pegawai::index');
 
 // routes master billing system
 $routes->get('/master/set-kelompok-tarif', 'Master\SetKelompokTarif::index');

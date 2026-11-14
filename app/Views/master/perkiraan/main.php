@@ -1,4 +1,4 @@
-<?= $this->extend('layouts/default') ?>
+<?= $this->extend('layouts/main_ekas') ?>
 <?= $this->section('content') ?>
 
 <div class="card border border-dark">
@@ -11,6 +11,14 @@
                 <button type="button" class="btn btn-sm btn-primary" id="btnAdd">
                     <i class="fa fa-plus-circle"></i>
                     Tambah
+                </button>
+                <button class="btn btn-sm btn-danger" id="exportPdf">
+                    <i class="fa fa-file-pdf"></i>
+                    PDF
+                </button>
+                <button class="btn btn-sm btn-success" id="exportExcel">
+                    <i class="fa fa-file-excel"></i>
+                    Excel
                 </button>
             </div>
         </div>
@@ -26,41 +34,19 @@
             </div>
         </div>
 
-        <div class="mb-2">
-            <button class="btn btn-sm btn-danger" id="exportPdf">
-                <i class="fa fa-file-pdf"></i>
-                PDF
-            </button>
-            <button class="btn btn-sm btn-success" id="exportExcel">
-                <i class="fa fa-file-excel"></i>
-                Excel
-            </button>
-        </div>
-        <div class="table-responsive" style="max-height: 500px; overflow-y: auto">
-            <table id="table" class="table table-sm table-bordered border-dark text-nowrap mb-0 align-middle">
-                <thead class="text-black fs-4">
+        <div class="table-responsive" style="max-height: 70vh; overflow-y: auto">
+            <table id="table" class="table table-sm table-bordered text-nowrap mb-0 align-middle">
+                <thead>
                     <tr>
-                        <td class="text-center align-middle border-top border-dark">
-                            <h6 class="fw-semibold mb-0">#</h6>
-                        </td>
-                        <td class="text-center align-middle border-top border-dark">
-                            <h6 class="fw-semibold mb-0">Perkiraan</h6>
-                        </td>
-                        <td class="text-center align-middle border-top border-dark">
-                            <h6 class="fw-semibold mb-0">Nomor</h6>
-                        </td>
-                        <td class="text-center align-middle border-top border-dark">
-                            <h6 class="fw-semibold mb-0">Normal</h6>
-                        </td>
-                        <td class="text-center align-middle border-top border-dark">
-                            <h6 class="fw-semibold mb-0">Status</h6>
-                        </td>
-                        <td class="text-center align-middle border-top border-dark">
-                            <h6 class="fw-semibold mb-0">#</h6>
-                        </td>
+                        <td class="text-center" width="3%">No.</td>
+                        <td class="text-center">Perkiraan</td>
+                        <td class="text-center">Nomor</td>
+                        <td class="text-center" width="8%">Normal</td>
+                        <td class="text-center" width="8%">Status</td>
+                        <td class="text-center" width="3%">#</td>
                     </tr>
                 </thead>
-                <tbody class="text-black" id="data-perkiraan"></tbody>
+                <tbody id="data-perkiraan"></tbody>
             </table>
         </div>
     </div>
@@ -141,14 +127,14 @@
                             group = value.GROUP_PERKIRAAN;
                             html += `
                             <tr class="fw-bold">
-                                <td class="text-center align-middle bg-dark text-white" colspan="6">${value.GROUP_PERKIRAAN}</td>
+                                <td class="align-middle bg-primary text-white ps-3" colspan="6">${value.GROUP_PERKIRAAN}</td>
                             </tr>
                         `;
                         }
                         html += `
                         <tr data-id="${value.ID}" data-nomor="${value.NOMOR}" data-normal="${value.NORMAL}" data-status="${value.STATUS}">
-                            <td class="text-center align-middle">${no++}</td>
-                            <td class="text-center align-middle">${value.NAMA_PERKIRAAN}</td>
+                            <td class="text-center align-middle" width="3%">${no++}</td>
+                            <td class="align-middle">${value.NAMA_PERKIRAAN}</td>
                             <td class="text-center align-middle">${value.NOMOR}</td>
                             <td class="text-center align-middle">${value.NORMAL}</td>
                             <td class="text-center align-middle">${value.STATUS}</td>

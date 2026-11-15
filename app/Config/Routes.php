@@ -30,6 +30,7 @@ $routes->get('/billing', 'Home::billing');
 $routes->group('ekas', function ($routes) {
     $routes->get('/', 'Home::ekas');
 
+    $routes->get('master/grup-perkiraan',   'Master\GrupPerkiraan::index');
     $routes->get('master/perkiraan',   'Master\Perkiraan::index');
     $routes->get('master/jabatan',     'Master\Jabatan::index');
     $routes->get('master/tugas-pokok', 'Master\TugasPokok::index');

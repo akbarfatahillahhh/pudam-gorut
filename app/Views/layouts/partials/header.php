@@ -389,6 +389,95 @@
         padding-left: 15px;
         padding-right: 15px;
     }
+
+        /* =====================================================
+       9. CUSTOM MODAL (PREMIUM SAAS THEME)
+       ===================================================== */
+    
+    /* Backdrop Modal (Efek Kaca / Blur) */
+    .modal-backdrop.show {
+        background-color: rgba(15, 23, 42, 0.5) !important; /* Warna Slate Gelap */
+        backdrop-filter: blur(6px) !important;
+        opacity: 1 !important;
+    }
+
+    /* Container Modal */
+    .modal-content {
+        border: none !important;
+        background-color: var(--bg-body) !important; /* Warna abu-abu lembut sebagai background utama */
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25) !important;
+    }
+
+    /* Header Modal */
+    .modal-header {
+        background-color: #ffffff !important;
+        border-bottom: 1px solid var(--border-color) !important;
+        padding: 16px 24px !important;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02) !important;
+        position: relative;
+        z-index: 10; /* Pastikan di atas body */
+    }
+
+    /* Judul Modal */
+    .modal-title {
+        font-family: 'Fraunces', serif !important;
+        color: #0c4a6e !important;
+        font-weight: 700 !important;
+        font-size: 18px !important;
+        letter-spacing: 0.5px;
+    }
+
+    /* =====================================================
+    TOMBOL CLOSE (X) KUSTOM - MERAH PREMIUM
+    ===================================================== */
+    .modal-header .btn-close {
+        background-color: #e11d48 !important; /* Merah Rose (Sesuai tema tombol PDF Anda) */
+        
+        /* Trik SVG untuk mengganti ikon X bawaan menjadi PUTIH */
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23ffffff'%3e%3cpath d='M.293.293a1 1 0 0 1 1.414 0L8 6.586 14.293.293a1 1 0 1 1 1.414 1.414L9.414 8l6.293 6.293a1 1 0 0 1-1.414 1.414L8 9.414l-6.293 6.293a1 1 0 0 1-1.414-1.414L6.586 8 .293 1.707a1 1 0 0 1 0-1.414z'/%3e%3c/svg%3e") !important;
+        
+        background-size: 12px !important; /* Ukuran ikon X */
+        border-radius: 20% !important; /* Tetap bulat */
+        padding: 10px !important;
+        opacity: 1 !important; /* Hilangkan transparansi bawaan Bootstrap */
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 2px 4px rgba(225, 29, 72, 0.2) !important;
+    }
+    
+    /* Efek saat kursor diarahkan (Hover) */
+    .modal-header .btn-close:hover {
+        background-color: #be123c !important; /* Merah lebih gelap */
+        transform: rotate(90deg) scale(1.1); /* Berputar dan membesar sedikit */
+        box-shadow: 0 6px 15px rgba(225, 29, 72, 0.4) !important; /* Efek Glow Merah */
+    }
+
+    /* Body Modal */
+    .modal-body {
+        padding: 24px !important;
+        background-color: var(--bg-body) !important;
+        /* Jika menggunakan iframe PDF, pastikan tingginya penuh */
+        display: flex;
+        flex-direction: column;
+        /* height: calc(100vh - 65px); /* 100vh - tinggi header */
+        overflow-y: auto;
+    }
+
+    /* Jika di dalam modal body ada Card (misal untuk preview PDF) */
+    .modal-body .card {
+        flex-grow: 1;
+        margin-bottom: 0;
+        border-radius: 12px !important;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03) !important;
+    }
+
+    .table-striped>tbody>tr:nth-of-type(odd)>*,
+    .table tbody td {
+        color: #000;
+    }
+
+    th, td {
+        border: 0.5px solid var(--border-color) !important;
+    }
 </style>
 
 </head>

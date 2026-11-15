@@ -2,7 +2,7 @@
     <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header border-bottom">
-                <h1 class="modal-title fs-5" id="modalLabel">Tambah <?= $title ?></h1>
+                <h1 class="modal-title" id="modalLabel">Tambah <?= $title ?></h1>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
@@ -41,7 +41,7 @@
                         </div>
                     </div>
                     <div class="border-top text-end pt-3 mt-4">
-                        <button type="submit" class="btn btn-sm btn-success">
+                        <button type="submit" class="btn btn-success">
                             <i class="fa fa-save"></i>
                             Simpan
                         </button>

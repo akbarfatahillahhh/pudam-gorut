@@ -1,6 +1,6 @@
 <div class="modal fade" id="modal" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-xl modal-dialog-centered h-95">
-        <div class="modal-content h-95">
+    <div class="modal-dialog modal-fullscreen modal-dialog-centered">
+        <div class="modal-content">
             <div class="modal-header border-bottom">
                 <h1 class="modal-title fs-5" id="modalLabel">EXPORT DATA KELOMPOK TARIF</h1>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>

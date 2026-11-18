@@ -2,12 +2,12 @@
     <div class="modal-dialog modal-xl modal-dialog-centered h-95">
         <div class="modal-content h-95">
             <div class="modal-header border-bottom">
-                <h1 class="modal-title fs-5" id="modalLabel">EXPORT DATA JABATAN</h1>
+                <h1 class="modal-title fs-5" id="modalLabel">EXPORT DAFTAR HADIR KARYAWAN</h1>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
                 <div class="h-100 w-100">
-                    <iframe src="<?= base_url('laporan/daftar-hadir/pdf') ?>/<?= $bulan ?>/<?= $tahun ?>/<?= $unit ?>" class="h-100 w-100"></iframe>
+                    <iframe src="<?= base_url('ekas/laporan/daftar-hadir/pdf') ?>/<?= $bulan ?>/<?= $tahun ?>/<?= $unit ?>" class="h-100 w-100"></iframe>
                 </div>
             </div>
         </div>

@@ -6,7 +6,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>PERUMDA GORUT</title>
     <link rel="shortcut icon" type="image/png" href="<?= base_url() ?>/logo/perumda-gorut.png" />
-    <link rel="stylesheet" href="<?= base_url() ?>/assets/css/styles.min.css" />
+    <link rel="stylesheet" href="<?= base_url() ?>/assets/css/styles.min.css?v=<?= filemtime(FCPATH . 'assets/css/styles.min.css') ?>" />
+
+    <!-- @import di dalam styles.min.css tidak berlaku (bukan di awal file),
+         jadi tabler-icons dimuat eksplisit di sini. Versi ikut filemtime
+         supaya cache Cloudflare/browser tidak menyajikan file lama. -->
+    <link rel="stylesheet" href="<?= base_url() ?>/assets/css/icons/tabler-icons/tabler-icons.css?v=<?= filemtime(FCPATH . 'assets/css/icons/tabler-icons/tabler-icons.css') ?>" />
 
     <script src="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.7.2/js/all.min.js"></script>
 

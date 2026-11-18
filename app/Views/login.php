@@ -812,7 +812,7 @@
 
                 <!-- Badge kecil di atas Judul -->
                 <div class="login-badge">
-                    <i class="fas fa-shield-check"></i> Portal Admin
+                    <i class="fas fa-shield-halved"></i> Portal Admin
                 </div>
 
                 <h2>Selamat Datang</h2>
@@ -928,7 +928,9 @@
                                 timer: 1200,
                                 showConfirmButton: false
                             }).then(function () {
-                                window.location.href = "<?= base_url('home') ?>"; // Sesuaikan redirect
+                                // Home::index mengarahkan ke dashboard sistem
+                                // yang boleh dibuka user (billing / kas).
+                                window.location.href = "<?= base_url('home') ?>";
                             });
                         } else {
                             Swal.fire({

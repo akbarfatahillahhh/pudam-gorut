@@ -1,5 +1,14 @@
 $(function () {
 
+  // Kartu chart ApexCharts tidak dipakai di view mana pun dan library-nya
+  // tidak dimuat (lihat footer.php). Lewati tanpa error jika tidak tersedia.
+  if (typeof ApexCharts === "undefined" ||
+    !document.querySelector("#chart") ||
+    !document.querySelector("#breakup") ||
+    !document.querySelector("#earning")) {
+    return;
+  }
+
 
   // =====================================
   // Profit

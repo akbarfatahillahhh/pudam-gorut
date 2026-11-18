@@ -1,8 +1,11 @@
-<!-- <VirtualHost *:8888>
-    DocumentRoot "/Applications/MAMP/htdocs/project/public"
-    ServerName project.test
-    <Directory "/Applications/MAMP/htdocs/project/public">
-        AllowOverride All
-        Require all granted
-    </Directory>
-</VirtualHost> -->
+# VirtualHost contoh (JANGAN ditaruh di .htaccess — .htaccess tidak boleh
+# berisi blok <VirtualHost>). Simpan di /etc/apache2/sites-available/.
+#
+# <VirtualHost *:8888>
+#     DocumentRoot "/Applications/MAMP/htdocs/project/public"
+#     ServerName project.test
+#     <Directory "/Applications/MAMP/htdocs/project/public">
+#         AllowOverride All
+#         Require all granted
+#     </Directory>
+# </VirtualHost>

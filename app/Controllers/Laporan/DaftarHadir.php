@@ -105,6 +105,8 @@ class DaftarHadir extends BaseController
             'default_font_size' => 10,
             'default_font'     => 'arial',
             'tempDir'          => WRITEPATH . 'mpdf_temp',
+            // Jangan perkecil tabel agar muat satu halaman; biarkan mengalir ke halaman berikutnya.
+            'shrink_tables_to_fit' => 0,
         ]);
 
         $mpdf->SetTitle('DAFTAR HADIR KARYAWAN ' . $report['bulanNama'] . ' ' . $report['tahun']);
@@ -389,8 +391,6 @@ class DaftarHadir extends BaseController
 
                     $tbody .= '<td class="text-center fw-bolder ' . $bg . '">' . $nilai . '</td>';
                 }
-
-                unset($bgHari);
             }
 
             $tbody .= '<td class="text-center text-success fw-bolder">' . $p['totalDatang'] . '</td>';

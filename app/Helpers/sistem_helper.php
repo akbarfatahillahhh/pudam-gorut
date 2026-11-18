@@ -91,7 +91,7 @@ if (!function_exists('sistem_peta_prefix')) {
             // ===== KAS (E-KAS) =====
             'ekas'                           => SISTEM_KAS,
             'home/ekas'                      => SISTEM_KAS,
-            'e-kas'                          => SISTEM_KAS,
+            'e-kas'                          => SISTEM_KAS, // redirect 301 ke /ekas
             'e_kas'                          => SISTEM_KAS, // autoRoute /E_Kas/...
             'logistik'                       => SISTEM_KAS, // autoRoute /Logistik/...
             'gudang'                         => SISTEM_KAS,
@@ -427,19 +427,19 @@ if (!function_exists('sistem_menu')) {
                         [
                             'label'    => 'Kas Keluar',
                             'icon'     => 'ti ti-cash-banknote',
-                            'prefix'   => 'e-kas/keluar|e-kas/riwayat',
+                            'prefix'   => 'ekas/keluar|ekas/riwayat',
                             'children' => [
-                                ['label' => 'Kas Pengeluaran', 'url' => 'e-kas/keluar', 'icon' => 'ti ti-receipt-2', 'prefix' => 'e-kas/keluar'],
-                                ['label' => 'Riwayat Kas Pengeluaran', 'url' => 'e-kas/riwayat', 'icon' => 'ti ti-history', 'prefix' => 'e-kas/riwayat'],
+                                ['label' => 'Kas Pengeluaran', 'url' => 'ekas/keluar', 'icon' => 'ti ti-receipt-2', 'prefix' => 'ekas/keluar'],
+                                ['label' => 'Riwayat Kas Pengeluaran', 'url' => 'ekas/riwayat', 'icon' => 'ti ti-history', 'prefix' => 'ekas/riwayat'],
                             ],
                         ],
                         [
                             'label'    => 'Kas Masuk',
                             'icon'     => 'ti ti-cash-banknote-plus',
-                            'prefix'   => 'e-kas/masuk',
+                            'prefix'   => 'ekas/masuk',
                             'children' => [
-                                ['label' => 'Penerimaan Kas Air', 'url' => 'e-kas/masuk', 'icon' => 'ti ti-droplet-dollar', 'prefix' => 'e-kas/masuk'],
-                                ['label' => 'Penerimaan Kas Non Air', 'url' => 'e-kas/masuk-non-air', 'icon' => 'ti ti-receipt', 'prefix' => 'e-kas/masuk-non-air'],
+                                ['label' => 'Penerimaan Kas Air', 'url' => 'ekas/masuk', 'icon' => 'ti ti-droplet-dollar', 'prefix' => 'ekas/masuk'],
+                                ['label' => 'Penerimaan Kas Non Air', 'url' => 'ekas/masuk-non-air', 'icon' => 'ti ti-receipt', 'prefix' => 'ekas/masuk-non-air'],
                             ],
                         ],
                     ],

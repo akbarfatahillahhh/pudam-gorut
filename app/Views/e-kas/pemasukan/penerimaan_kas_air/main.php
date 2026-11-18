@@ -134,7 +134,7 @@
     function tarikData(tglAwal, tglAkhir, unit) {
         $.ajax({
             type: 'post',
-            url: "<?= base_url('e-kas/masuk/tampil') ?>",
+            url: "<?= base_url('ekas/masuk/tampil') ?>",
             data: {
                 tglawal: tglAwal,
                 tglakhir: tglAkhir,
@@ -278,7 +278,7 @@
 
             $.ajax({
                 type: 'post',
-                url: "<?= base_url('e-kas/masuk/simpan') ?>",
+                url: "<?= base_url('ekas/masuk/simpan') ?>",
                 data: $('#formPenerimaan').serialize(),
                 dataType: 'json',
                 beforeSend: function() {

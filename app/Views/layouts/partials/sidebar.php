@@ -1,6 +1,6 @@
 <?php
 /**
- * Sidebar generik untuk kedua sistem (billing / e-kas).
+ * Sidebar generik untuk kedua sistem (billing / ekas).
  *
  * Struktur menu diambil dari App\Helpers\sistem_helper.php -> sistem_menu(),
  * jadi menu tidak lagi ditulis manual per partial dan tidak ada lagi menu

@@ -63,15 +63,25 @@ $routes->get('/master/pegawai', 'Master\Pegawai::index');
 $routes->get('/master/bank', 'Master\Bank::index');
 
 // kas
-$routes->get('/e-kas/keluar', 'E_Kas\Pengeluaran\EntryKas_Keluar::index');
-$routes->get('/e-kas/riwayat', 'E_Kas\Pengeluaran\EntryKas_Keluar::riwayat');
+$routes->get('/ekas/keluar', 'E_Kas\Pengeluaran\EntryKas_Keluar::index');
+$routes->get('/ekas/riwayat', 'E_Kas\Pengeluaran\EntryKas_Keluar::riwayat');
 
 // kas masuk (penerimaan)
-$routes->get('/e-kas/masuk', 'E_Kas\Pemasukan\PenerimaanKasAir::index');
-$routes->post('/e-kas/masuk/tampil', 'E_Kas\Pemasukan\PenerimaanKasAir::tampil');
-$routes->post('/e-kas/masuk/simpan', 'E_Kas\Pemasukan\PenerimaanKasAir::simpan');
-$routes->get('/e-kas/masuk-non-air', 'E_Kas\Pemasukan\PenerimaanKasNonAir::index');
-$routes->post('/e-kas/masuk-non-air/simpan', 'E_Kas\Pemasukan\PenerimaanKasNonAir::simpan');
+$routes->get('/ekas/masuk', 'E_Kas\Pemasukan\PenerimaanKasAir::index');
+$routes->post('/ekas/masuk/tampil', 'E_Kas\Pemasukan\PenerimaanKasAir::tampil');
+$routes->post('/ekas/masuk/simpan', 'E_Kas\Pemasukan\PenerimaanKasAir::simpan');
+$routes->get('/ekas/masuk-non-air', 'E_Kas\Pemasukan\PenerimaanKasNonAir::index');
+$routes->post('/ekas/masuk-non-air/simpan', 'E_Kas\Pemasukan\PenerimaanKasNonAir::simpan');
+
+// URL lama /e-kas/* dialihkan permanen ke /ekas/*
+$routes->get('/e-kas', static fn () => redirect()->to(base_url('ekas'), 301));
+$routes->get('/e-kas/keluar', static fn () => redirect()->to(base_url('ekas/keluar'), 301));
+$routes->get('/e-kas/riwayat', static fn () => redirect()->to(base_url('ekas/riwayat'), 301));
+$routes->get('/e-kas/masuk', static fn () => redirect()->to(base_url('ekas/masuk'), 301));
+$routes->get('/e-kas/masuk-non-air', static fn () => redirect()->to(base_url('ekas/masuk-non-air'), 301));
+$routes->post('/e-kas/masuk/tampil', static fn () => redirect()->to(base_url('ekas/masuk/tampil'), 301));
+$routes->post('/e-kas/masuk/simpan', static fn () => redirect()->to(base_url('ekas/masuk/simpan'), 301));
+$routes->post('/e-kas/masuk-non-air/simpan', static fn () => redirect()->to(base_url('ekas/masuk-non-air/simpan'), 301));
 
 // logistik
 $routes->get('/faktur-pembelian', 'Logistik\BarangMasuk\Penerimaan::index');

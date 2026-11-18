@@ -119,8 +119,8 @@
                     // Semua pintasan seragam, tidak ada yang disorot.
                     // Tiap item: url, label, keterangan, ikon.
                     $pintasan = [
-                        ['url' => 'e-kas/keluar', 'label' => 'Kas Pengeluaran', 'ket' => 'Catat voucher pengeluaran kas harian', 'icon' => 'ti ti-cash-banknote'],
-                        ['url' => 'e-kas/riwayat', 'label' => 'Riwayat Kas', 'ket' => 'Telusuri voucher yang sudah dibuat', 'icon' => 'ti ti-history'],
+                        ['url' => 'ekas/keluar', 'label' => 'Kas Pengeluaran', 'ket' => 'Catat voucher pengeluaran kas harian', 'icon' => 'ti ti-cash-banknote'],
+                        ['url' => 'ekas/riwayat', 'label' => 'Riwayat Kas', 'ket' => 'Telusuri voucher yang sudah dibuat', 'icon' => 'ti ti-history'],
                         ['url' => 'faktur-pembelian', 'label' => 'Faktur Pembelian', 'ket' => 'Input penerimaan barang masuk', 'icon' => 'ti ti-file-invoice'],
                         ['url' => 'gudang/opname-stok', 'label' => 'Opname Stok', 'ket' => 'Hitung dan sesuaikan stok gudang', 'icon' => 'ti ti-clipboard-list'],
                         ['url' => 'laporan/rekap-persediaan', 'label' => 'Rekap Persediaan', 'ket' => 'Laporan posisi persediaan', 'icon' => 'ti ti-chart-pie'],

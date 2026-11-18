@@ -244,7 +244,7 @@
 
             $.ajax({
                 type: 'post',
-                url: "<?= base_url('e-kas/masuk-non-air/simpan') ?>",
+                url: "<?= base_url('ekas/masuk-non-air/simpan') ?>",
                 data: $('#formNonAir').serialize(),
                 dataType: 'json',
                 beforeSend: function() {

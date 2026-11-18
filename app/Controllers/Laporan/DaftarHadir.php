@@ -260,6 +260,22 @@ class DaftarHadir extends BaseController
             return null;
         }
 
+        // Halaman Absensi memakai id "LATITUDE-LONGITUDE" (select2
+        // GetData/getUnitByTitikKoordinat), sedangkan Laporan memakai
+        // m_titik_absen.ID. Terima keduanya agar tombol PDF di modul
+        // Absensi bisa memakai laporan ini.
+        if (is_string($unit) && strpos($unit, '-') !== false && !is_numeric($unit)) {
+            list($latitude, $longitude) = explode('-', $unit, 2);
+
+            $row = $this->db->table('m_titik_absen')
+                ->where('LATITUDE', $latitude)
+                ->where('LONGITUDE', $longitude)
+                ->get()
+                ->getRowArray();
+
+            return $row ?: null;
+        }
+
         $row = $this->db->table('m_titik_absen')
             ->where('ID', $unit)
             ->get()

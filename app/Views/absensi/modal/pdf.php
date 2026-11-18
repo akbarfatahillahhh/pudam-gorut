@@ -7,7 +7,7 @@
             </div>
             <div class="modal-body">
                 <div class="h-100 w-100">
-                    <iframe src="<?= base_url('Absensi/export_pdf') ?>/<?= $bulan ?>/<?= $tahun ?>/<?= $unit ?>" class="h-100 w-100"></iframe>
+                    <iframe src="<?= base_url('laporan/daftar-hadir/pdf') ?>/<?= $bulan ?>/<?= $tahun ?>/<?= $unit ?>" class="h-100 w-100"></iframe>
                 </div>
             </div>
         </div>

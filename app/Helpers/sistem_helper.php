@@ -127,10 +127,15 @@ if (!function_exists('sistem_prefix_admin')) {
      * Modul di sini tetap milik sistem tertentu (lihat sistem_peta_prefix)
      * supaya sidebar tetap di sistem yang benar; yang dibatasi hanya
      * hak buka untuk non-admin.
+     *
+     * Daftar ini harus sejalan dengan grup menu yang bertanda 'admin'
+     * di sistem_menu(); kalau tidak, menu bisa tersembunyi tapi URL-nya
+     * tetap terbuka.
      */
     function sistem_prefix_admin(): array
     {
         return [
+            // master billing
             'master/pelanggan',
             'master/pasang-meter',
             'master/set-kelompok-tarif',
@@ -138,6 +143,8 @@ if (!function_exists('sistem_prefix_admin')) {
             'master/kabupaten',
             'master/kecamatan',
             'master/kelurahan',
+
+            // master kas
             'master/perkiraan',
             'master/bank',
             'master/jabatan',
@@ -145,6 +152,13 @@ if (!function_exists('sistem_prefix_admin')) {
             'master/pokok',
             'master/pegawai',
             'master/akun',
+
+            // Administrasi (grup menu 'Administrasi' di kedua sistem)
+            'absensi',
+            'slip-gaji',
+            'persuratan',
+            'laporan/daftar-hadir',
+            'laporan/kinerja-pegawai',
         ];
     }
 }
@@ -451,8 +465,6 @@ if (!function_exists('sistem_menu')) {
                     'judul' => 'Laporan',
                     'items' => [
                         ['label' => 'Rekap Persediaan', 'url' => 'laporan/rekap-persediaan', 'icon' => 'ti ti-chart-pie', 'prefix' => 'laporan/rekap-persediaan'],
-                        ['label' => 'Daftar Hadir Karyawan', 'url' => 'laporan/daftar-hadir', 'icon' => 'ti ti-calendar-month', 'prefix' => 'laporan/daftar-hadir'],
-                        ['label' => 'Kinerja Pegawai', 'url' => 'laporan/kinerja-pegawai', 'icon' => 'ti ti-report-analytics', 'prefix' => 'laporan/kinerja-pegawai'],
                     ],
                 ],
                 [
@@ -487,6 +499,8 @@ if (!function_exists('sistem_menu')) {
                     'items' => [
                         ['label' => 'User/Akun', 'url' => 'master/akun', 'icon' => 'ti ti-shield-lock', 'id' => 'akun_menu', 'prefix' => 'master/akun'],
                         ['label' => 'Absensi', 'url' => 'absensi', 'icon' => 'ti ti-calendar-stats', 'id' => 'absensi_menu', 'prefix' => 'absensi'],
+                        ['label' => 'Daftar Hadir Karyawan', 'url' => 'laporan/daftar-hadir', 'icon' => 'ti ti-calendar-month', 'prefix' => 'laporan/daftar-hadir'],
+                        ['label' => 'Kinerja Pegawai', 'url' => 'laporan/kinerja-pegawai', 'icon' => 'ti ti-report-analytics', 'prefix' => 'laporan/kinerja-pegawai'],
                         ['label' => 'Slip Gaji', 'url' => 'slip-gaji', 'icon' => 'ti ti-cash-register', 'prefix' => 'slip-gaji'],
                         ['label' => 'Persuratan', 'url' => 'persuratan', 'icon' => 'ti ti-mailbox', 'prefix' => 'persuratan'],
                     ],

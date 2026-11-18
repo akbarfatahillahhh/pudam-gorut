@@ -66,6 +66,13 @@ $routes->get('/master/bank', 'Master\Bank::index');
 $routes->get('/e-kas/keluar', 'E_Kas\Pengeluaran\EntryKas_Keluar::index');
 $routes->get('/e-kas/riwayat', 'E_Kas\Pengeluaran\EntryKas_Keluar::riwayat');
 
+// kas masuk (penerimaan)
+$routes->get('/e-kas/masuk', 'E_Kas\Pemasukan\PenerimaanKasAir::index');
+$routes->post('/e-kas/masuk/tampil', 'E_Kas\Pemasukan\PenerimaanKasAir::tampil');
+$routes->post('/e-kas/masuk/simpan', 'E_Kas\Pemasukan\PenerimaanKasAir::simpan');
+$routes->get('/e-kas/masuk-non-air', 'E_Kas\Pemasukan\PenerimaanKasNonAir::index');
+$routes->post('/e-kas/masuk-non-air/simpan', 'E_Kas\Pemasukan\PenerimaanKasNonAir::simpan');
+
 // logistik
 $routes->get('/faktur-pembelian', 'Logistik\BarangMasuk\Penerimaan::index');
 $routes->get('/barang-masuk/penerimaan', 'Logistik\BarangMasuk\Penerimaan::index');
@@ -79,9 +86,17 @@ $routes->get('/gudang/opname-stok', 'Logistik\Gudang\OpnameStok::index');
 
 // laporan kas
 $routes->get('/laporan/rekap-persediaan', 'Laporan\RekapPersediaan::index');
+$routes->get('/laporan/daftar-hadir', 'Laporan\DaftarHadir::index');
+$routes->get('/laporan/daftar-hadir/pdf/(:segment)/(:segment)/(:segment)', 'Laporan\DaftarHadir::pdf/$1/$2/$3');
+$routes->get('/laporan/kinerja-pegawai', 'Laporan\KinerjaPegawai::index');
+$routes->get('/laporan/kinerja-pegawai/data', 'Laporan\KinerjaPegawai::data');
+$routes->get('/laporan/kinerja-pegawai/detail', 'Laporan\KinerjaPegawai::detail');
+$routes->get('/laporan/kinerja-pegawai/pdf/(:segment)', 'Laporan\KinerjaPegawai::pdf/$1');
 
 // kepegawaian
 $routes->get('/absensi', 'Absensi::unit');
+$routes->get('/slip-gaji', 'SlipGaji::index');
+$routes->get('/persuratan', 'Persuratan::index');
 
 // =====================================================================
 // ADMIN (berlaku di kedua sistem)

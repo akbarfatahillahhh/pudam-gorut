@@ -98,6 +98,8 @@ if (!function_exists('sistem_peta_prefix')) {
             'barang-keluar'                  => SISTEM_KAS,
             'barang-masuk'                   => SISTEM_KAS,
             'faktur-pembelian'               => SISTEM_KAS,
+            'slip-gaji'                      => SISTEM_KAS,
+            'persuratan'                     => SISTEM_KAS,
 
             // master kas
             'master/perkiraan'               => SISTEM_KAS,
@@ -109,6 +111,8 @@ if (!function_exists('sistem_peta_prefix')) {
 
             // laporan kas
             'laporan/rekap-persediaan'       => SISTEM_KAS,
+            'laporan/daftar-hadir'           => SISTEM_KAS,
+            'laporan/kinerja-pegawai'        => SISTEM_KAS,
 
             // kepegawaian -> ikut kas
             'absensi'                        => SISTEM_KAS,
@@ -415,8 +419,15 @@ if (!function_exists('sistem_menu')) {
                                 ['label' => 'Riwayat Kas Pengeluaran', 'url' => 'e-kas/riwayat', 'icon' => 'ti ti-history', 'prefix' => 'e-kas/riwayat'],
                             ],
                         ],
-                        // Kas Masuk (penerimaan kas air / non air) belum ada
-                        // controller-nya, jadi belum ditampilkan.
+                        [
+                            'label'    => 'Kas Masuk',
+                            'icon'     => 'ti ti-cash-banknote-plus',
+                            'prefix'   => 'e-kas/masuk',
+                            'children' => [
+                                ['label' => 'Penerimaan Kas Air', 'url' => 'e-kas/masuk', 'icon' => 'ti ti-droplet-dollar', 'prefix' => 'e-kas/masuk'],
+                                ['label' => 'Penerimaan Kas Non Air', 'url' => 'e-kas/masuk-non-air', 'icon' => 'ti ti-receipt', 'prefix' => 'e-kas/masuk-non-air'],
+                            ],
+                        ],
                     ],
                 ],
                 [
@@ -440,6 +451,8 @@ if (!function_exists('sistem_menu')) {
                     'judul' => 'Laporan',
                     'items' => [
                         ['label' => 'Rekap Persediaan', 'url' => 'laporan/rekap-persediaan', 'icon' => 'ti ti-chart-pie', 'prefix' => 'laporan/rekap-persediaan'],
+                        ['label' => 'Daftar Hadir Karyawan', 'url' => 'laporan/daftar-hadir', 'icon' => 'ti ti-calendar-month', 'prefix' => 'laporan/daftar-hadir'],
+                        ['label' => 'Kinerja Pegawai', 'url' => 'laporan/kinerja-pegawai', 'icon' => 'ti ti-report-analytics', 'prefix' => 'laporan/kinerja-pegawai'],
                     ],
                 ],
                 [
@@ -474,6 +487,8 @@ if (!function_exists('sistem_menu')) {
                     'items' => [
                         ['label' => 'User/Akun', 'url' => 'master/akun', 'icon' => 'ti ti-shield-lock', 'id' => 'akun_menu', 'prefix' => 'master/akun'],
                         ['label' => 'Absensi', 'url' => 'absensi', 'icon' => 'ti ti-calendar-stats', 'id' => 'absensi_menu', 'prefix' => 'absensi'],
+                        ['label' => 'Slip Gaji', 'url' => 'slip-gaji', 'icon' => 'ti ti-cash-register', 'prefix' => 'slip-gaji'],
+                        ['label' => 'Persuratan', 'url' => 'persuratan', 'icon' => 'ti ti-mailbox', 'prefix' => 'persuratan'],
                     ],
                 ],
             ];

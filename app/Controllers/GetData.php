@@ -547,4 +547,159 @@ class Getdata extends BaseController
             }
         }
     }
+
+    /**
+     * Daftar unit penagihan (t_kecamatan) untuk select2.
+     */
+    public function getUnitPenagihan()
+    {
+        if ($this->request->isAJAX()) {
+            $cari = $this->request->getGet('search');
+
+            $builder = $this->db->table('t_kecamatan');
+            $builder->select('id_kec, kecamatan');
+
+            if ($cari != '') {
+                $builder->groupStart()
+                    ->like('id_kec', $cari)
+                    ->orLike('kecamatan', $cari)
+                    ->groupEnd();
+            }
+
+            $list = array_map(function ($row) {
+                return ['id' => $row['id_kec'], 'text' => $row['kecamatan']];
+            }, $builder->get()->getResultArray());
+
+            echo json_encode($list);
+        }
+    }
+
+    /**
+     * Daftar titik absen (m_titik_absen) untuk select2.
+     */
+    public function getTitikAbsen()
+    {
+        if ($this->request->isAJAX()) {
+            $cari = $this->request->getGet('search');
+
+            $builder = $this->db->table('m_titik_absen');
+
+            if ($cari != '') {
+                $builder->groupStart()
+                    ->like('ID', $cari)
+                    ->orLike('UNIT', $cari)
+                    ->groupEnd();
+            }
+
+            $list = array_map(function ($row) {
+                return ['id' => $row['ID'], 'text' => strtoupper($row['UNIT'])];
+            }, $builder->get()->getResultArray());
+
+            echo json_encode($list);
+        }
+    }
+
+    /**
+     * Daftar pegawai untuk select2 (NIK | NAMA).
+     */
+    public function getKaryawan()
+    {
+        if ($this->request->isAJAX()) {
+            $cari = $this->request->getGet('search');
+
+            $builder = $this->db->table('pegawai');
+
+            if ($cari != '') {
+                $builder->groupStart()
+                    ->like('ID', $cari)
+                    ->orLike('NIK', $cari)
+                    ->orLike('NAMA', $cari)
+                    ->groupEnd();
+            }
+
+            $list = array_map(function ($row) {
+                return [
+                    'id'   => $row['ID'],
+                    'text' => $row['NIK'] . ' | ' . strtoupper($row['NAMA']),
+                ];
+            }, $builder->get()->getResultArray());
+
+            echo json_encode($list);
+        }
+    }
+
+    /**
+     * Daftar jenis surat (master_persuratan) untuk select2.
+     */
+    public function getPerihalSurat()
+    {
+        if ($this->request->isAJAX()) {
+            $cari = $this->request->getGet('search');
+
+            $builder = $this->db->table('master_persuratan');
+
+            if ($cari != '') {
+                $builder->groupStart()
+                    ->like('ID', $cari)
+                    ->orLike('JENIS_SURAT', $cari)
+                    ->groupEnd();
+            }
+
+            $list = array_map(function ($row) {
+                return ['id' => $row['ID'], 'text' => $row['JENIS_SURAT']];
+            }, $builder->get()->getResultArray());
+
+            echo json_encode($list);
+        }
+    }
+
+    /**
+     * Daftar satuan barang (logistik_satuan) untuk select2.
+     */
+    public function getSatuan()
+    {
+        if ($this->request->isAJAX()) {
+            $cari = $this->request->getGet('search');
+
+            $builder = $this->db->table('logistik_satuan');
+
+            if ($cari != '') {
+                $builder->like('satuan', $cari);
+            }
+
+            $list = array_map(function ($row) {
+                return ['id' => $row['satuan'], 'text' => $row['satuan']];
+            }, $builder->get()->getResultArray());
+
+            echo json_encode($list);
+        }
+    }
+
+    /**
+     * Daftar voucher kas keluar berstatus N (belum dibayar), untuk select2.
+     */
+    public function getVoucherMerah()
+    {
+        if ($this->request->isAJAX()) {
+            $cari = $this->request->getGet('search');
+
+            $builder = $this->db->table('akun_kas_keluar')
+                ->select('NOMOR, TANGGAL')
+                ->where('STATUS', 'N')
+                ->groupBy('NOMOR, TANGGAL');
+
+            if ($cari != '') {
+                $builder->like('NOMOR', $cari);
+            }
+
+            $list = array_map(function ($row) {
+                return [
+                    'id'   => $row['NOMOR'],
+                    'text' => 'Voucher No. ' . $row['NOMOR'] . ' (Tanggal: ' . $row['TANGGAL'] . ')',
+                ];
+            }, $builder->get()->getResultArray());
+
+            echo json_encode($list);
+        }
+    }
 }

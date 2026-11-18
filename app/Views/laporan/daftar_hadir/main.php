@@ -40,14 +40,14 @@
 
         <div class="mb-2">
             <button class="btn btn-sm btn-danger" id="exportPdf">
-                <i class="ti ti-file-type-pdf"></i>
+                <i class="ti ti-file-download"></i>
                 PDF
             </button>
         </div>
 
         <div class="border border-dark rounded p-3" id="areaLaporan">
             <div class="text-center py-5">
-                <i class="ti ti-calendar-month text-dark" style="font-size: 3rem;"></i>
+                <i class="ti ti-calendar-event text-dark" style="font-size: 3rem;"></i>
                 <h5 class="text-dark mb-1">PRATINJAU DAFTAR HADIR</h5>
                 <p class="text-muted mb-0">Tentukan Bulan, Tahun, dan Unit Kerja lalu klik tombol Lihat.</p>
             </div>

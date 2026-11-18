@@ -812,7 +812,7 @@
 
                 <!-- Badge kecil di atas Judul -->
                 <div class="login-badge">
-                    <i class="fas fa-shield-check"></i> Portal Admin
+                    <i class="fas fa-shield-halved"></i> Portal Admin
                 </div>
 
                 <h2>Selamat Datang</h2>

@@ -29,7 +29,7 @@
         <div class="col-lg-8 col-md-12 mb-2 text-lg-end">
             <span class="badge bg-secondary me-2" id="badgeStatusGaji">DRAFT</span>
             <button type="button" class="btn btn-sm btn-danger" id="btnPrintGaji">
-                <i class="ti ti-file-type-pdf"></i>
+                <i class="ti ti-file-download"></i>
                 Cetak PDF
             </button>
             <button type="button" class="btn btn-sm btn-warning" id="btnDraftGaji">

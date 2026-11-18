@@ -435,10 +435,10 @@ if (!function_exists('sistem_menu')) {
                         ],
                         [
                             'label'    => 'Kas Masuk',
-                            'icon'     => 'ti ti-cash-banknote-plus',
+                            'icon'     => 'ti ti-cash',
                             'prefix'   => 'ekas/masuk',
                             'children' => [
-                                ['label' => 'Penerimaan Kas Air', 'url' => 'ekas/masuk', 'icon' => 'ti ti-droplet-dollar', 'prefix' => 'ekas/masuk'],
+                                ['label' => 'Penerimaan Kas Air', 'url' => 'ekas/masuk', 'icon' => 'ti ti-droplet', 'prefix' => 'ekas/masuk'],
                                 ['label' => 'Penerimaan Kas Non Air', 'url' => 'ekas/masuk-non-air', 'icon' => 'ti ti-receipt', 'prefix' => 'ekas/masuk-non-air'],
                             ],
                         ],
@@ -499,9 +499,9 @@ if (!function_exists('sistem_menu')) {
                     'items' => [
                         ['label' => 'User/Akun', 'url' => 'master/akun', 'icon' => 'ti ti-shield-lock', 'id' => 'akun_menu', 'prefix' => 'master/akun'],
                         ['label' => 'Absensi', 'url' => 'absensi', 'icon' => 'ti ti-calendar-stats', 'id' => 'absensi_menu', 'prefix' => 'absensi'],
-                        ['label' => 'Daftar Hadir Karyawan', 'url' => 'laporan/daftar-hadir', 'icon' => 'ti ti-calendar-month', 'prefix' => 'laporan/daftar-hadir'],
+                        ['label' => 'Daftar Hadir Karyawan', 'url' => 'laporan/daftar-hadir', 'icon' => 'ti ti-calendar-event', 'prefix' => 'laporan/daftar-hadir'],
                         ['label' => 'Kinerja Pegawai', 'url' => 'laporan/kinerja-pegawai', 'icon' => 'ti ti-report-analytics', 'prefix' => 'laporan/kinerja-pegawai'],
-                        ['label' => 'Slip Gaji', 'url' => 'slip-gaji', 'icon' => 'ti ti-cash-register', 'prefix' => 'slip-gaji'],
+                        ['label' => 'Slip Gaji', 'url' => 'slip-gaji', 'icon' => 'ti ti-file-dollar', 'prefix' => 'slip-gaji'],
                         ['label' => 'Persuratan', 'url' => 'persuratan', 'icon' => 'ti ti-mailbox', 'prefix' => 'persuratan'],
                     ],
                 ],

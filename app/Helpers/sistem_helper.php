@@ -90,9 +90,15 @@ if (!function_exists('sistem_peta_prefix')) {
 
             // ===== KAS (E-KAS) =====
             'ekas'                           => SISTEM_KAS,
+
+            // Semua modul E-Kas berada di bawah prefix /ekas.
+            // Daftar di bawah tinggal untuk URL lama; route-nya sudah
+            // dialihkan 301 ke /ekas/... Supaya konteks sistem tetap benar
+            // selama redirect, prefix lama tetap dipetakan ke KAS.
             'home/ekas'                      => SISTEM_KAS,
             'e-kas'                          => SISTEM_KAS, // redirect 301 ke /ekas
             'e_kas'                          => SISTEM_KAS, // autoRoute /E_Kas/...
+
             'logistik'                       => SISTEM_KAS, // autoRoute /Logistik/...
             'gudang'                         => SISTEM_KAS,
             'barang-keluar'                  => SISTEM_KAS,
@@ -144,16 +150,26 @@ if (!function_exists('sistem_prefix_admin')) {
             'master/kecamatan',
             'master/kelurahan',
 
-            // master kas
+            // master kas (sekarang di bawah /ekas). Prefix lama tetap
+            // didaftarkan supaya URL lama yang belum ter-redirect juga
+            // ikut tertutup untuk non-admin.
+            'ekas/master',
             'master/perkiraan',
             'master/bank',
             'master/jabatan',
             'master/tugas-pokok',
             'master/pokok',
             'master/pegawai',
+
+            // berlaku di kedua sistem
             'master/akun',
 
             // Administrasi (grup menu 'Administrasi' di kedua sistem)
+            'ekas/absensi',
+            'ekas/slip-gaji',
+            'ekas/persuratan',
+            'ekas/laporan/daftar-hadir',
+            'ekas/laporan/kinerja-pegawai',
             'absensi',
             'slip-gaji',
             'persuratan',
@@ -447,16 +463,16 @@ if (!function_exists('sistem_menu')) {
                 [
                     'judul' => 'Logistik',
                     'items' => [
-                        ['label' => 'Faktur Pembelian', 'url' => 'faktur-pembelian', 'icon' => 'ti ti-file-invoice', 'id' => 'faktur_pembelian_menu', 'prefix' => 'faktur-pembelian|barang-masuk'],
-                        ['label' => 'Entry Permintaan', 'url' => 'barang-keluar/permintaan', 'icon' => 'ti ti-clipboard-plus', 'id' => 'entry_permintaan_menu', 'prefix' => 'barang-keluar/permintaan'],
+                        ['label' => 'Faktur Pembelian', 'url' => 'ekas/faktur-pembelian', 'icon' => 'ti ti-file-invoice', 'id' => 'faktur_pembelian_menu', 'prefix' => 'ekas/faktur-pembelian|ekas/barang-masuk'],
+                        ['label' => 'Entry Permintaan', 'url' => 'ekas/barang-keluar/permintaan', 'icon' => 'ti ti-clipboard-plus', 'id' => 'entry_permintaan_menu', 'prefix' => 'ekas/barang-keluar/permintaan'],
                         [
                             'label'    => 'Gudang',
                             'icon'     => 'ti ti-building-warehouse',
-                            'prefix'   => 'gudang',
+                            'prefix'   => 'ekas/gudang',
                             'children' => [
-                                ['label' => 'Data Barang', 'url' => 'gudang/barang', 'icon' => 'ti ti-packages', 'prefix' => 'gudang/barang'],
-                                ['label' => 'Cek Permintaan', 'url' => 'gudang/cek-permintaan', 'icon' => 'ti ti-clipboard-check', 'prefix' => 'gudang/cek-permintaan'],
-                                ['label' => 'Opname Stok', 'url' => 'gudang/opname-stok', 'icon' => 'ti ti-clipboard-list', 'prefix' => 'gudang/opname-stok'],
+                                ['label' => 'Data Barang', 'url' => 'ekas/gudang/barang', 'icon' => 'ti ti-packages', 'prefix' => 'ekas/gudang/barang'],
+                                ['label' => 'Cek Permintaan', 'url' => 'ekas/gudang/cek-permintaan', 'icon' => 'ti ti-clipboard-check', 'prefix' => 'ekas/gudang/cek-permintaan'],
+                                ['label' => 'Opname Stok', 'url' => 'ekas/gudang/opname-stok', 'icon' => 'ti ti-clipboard-list', 'prefix' => 'ekas/gudang/opname-stok'],
                             ],
                         ],
                     ],
@@ -464,7 +480,7 @@ if (!function_exists('sistem_menu')) {
                 [
                     'judul' => 'Laporan',
                     'items' => [
-                        ['label' => 'Rekap Persediaan', 'url' => 'laporan/rekap-persediaan', 'icon' => 'ti ti-chart-pie', 'prefix' => 'laporan/rekap-persediaan'],
+                        ['label' => 'Rekap Persediaan', 'url' => 'ekas/laporan/rekap-persediaan', 'icon' => 'ti ti-chart-pie', 'prefix' => 'ekas/laporan/rekap-persediaan'],
                     ],
                 ],
                 [
@@ -474,9 +490,9 @@ if (!function_exists('sistem_menu')) {
                         [
                             'label'    => 'Master Keuangan',
                             'icon'     => 'ti ti-wallet',
-                            'prefix'   => 'master/perkiraan|master/bank',
+                            'prefix'   => 'ekas/master/perkiraan|ekas/master/bank',
                             'children' => [
-                                ['label' => 'Perkiraan', 'url' => 'master/perkiraan', 'icon' => 'ti ti-report-money', 'prefix' => 'master/perkiraan'],
+                                ['label' => 'Perkiraan', 'url' => 'ekas/master/perkiraan', 'icon' => 'ti ti-report-money', 'prefix' => 'ekas/master/perkiraan'],
                                 // Master Bank disembunyikan: tabel `master_bank`
                                 // belum ada di db_pdam.
                             ],
@@ -484,11 +500,11 @@ if (!function_exists('sistem_menu')) {
                         [
                             'label'    => 'Master Pegawai',
                             'icon'     => 'ti ti-id-badge',
-                            'prefix'   => 'master/jabatan|master/pokok|master/tugas-pokok|master/pegawai',
+                            'prefix'   => 'ekas/master/jabatan|ekas/master/pokok|ekas/master/tugas-pokok|ekas/master/pegawai',
                             'children' => [
-                                ['label' => 'Jabatan', 'url' => 'master/jabatan', 'icon' => 'ti ti-hierarchy', 'prefix' => 'master/jabatan'],
-                                ['label' => 'Tugas Pokok', 'url' => 'master/pokok', 'icon' => 'ti ti-list-details', 'prefix' => 'master/pokok|master/tugas-pokok'],
-                                ['label' => 'Data Pegawai', 'url' => 'master/pegawai', 'icon' => 'ti ti-users', 'prefix' => 'master/pegawai'],
+                                ['label' => 'Jabatan', 'url' => 'ekas/master/jabatan', 'icon' => 'ti ti-hierarchy', 'prefix' => 'ekas/master/jabatan'],
+                                ['label' => 'Tugas Pokok', 'url' => 'ekas/master/pokok', 'icon' => 'ti ti-list-details', 'prefix' => 'ekas/master/pokok|ekas/master/tugas-pokok'],
+                                ['label' => 'Data Pegawai', 'url' => 'ekas/master/pegawai', 'icon' => 'ti ti-users', 'prefix' => 'ekas/master/pegawai'],
                             ],
                         ],
                     ],
@@ -498,11 +514,11 @@ if (!function_exists('sistem_menu')) {
                     'admin' => true,
                     'items' => [
                         ['label' => 'User/Akun', 'url' => 'master/akun', 'icon' => 'ti ti-shield-lock', 'id' => 'akun_menu', 'prefix' => 'master/akun'],
-                        ['label' => 'Absensi', 'url' => 'absensi', 'icon' => 'ti ti-calendar-stats', 'id' => 'absensi_menu', 'prefix' => 'absensi'],
-                        ['label' => 'Daftar Hadir Karyawan', 'url' => 'laporan/daftar-hadir', 'icon' => 'ti ti-calendar-event', 'prefix' => 'laporan/daftar-hadir'],
-                        ['label' => 'Kinerja Pegawai', 'url' => 'laporan/kinerja-pegawai', 'icon' => 'ti ti-report-analytics', 'prefix' => 'laporan/kinerja-pegawai'],
-                        ['label' => 'Slip Gaji', 'url' => 'slip-gaji', 'icon' => 'ti ti-file-dollar', 'prefix' => 'slip-gaji'],
-                        ['label' => 'Persuratan', 'url' => 'persuratan', 'icon' => 'ti ti-mailbox', 'prefix' => 'persuratan'],
+                        ['label' => 'Absensi', 'url' => 'ekas/absensi', 'icon' => 'ti ti-calendar-stats', 'id' => 'absensi_menu', 'prefix' => 'ekas/absensi'],
+                        ['label' => 'Daftar Hadir Karyawan', 'url' => 'ekas/laporan/daftar-hadir', 'icon' => 'ti ti-calendar-event', 'prefix' => 'ekas/laporan/daftar-hadir'],
+                        ['label' => 'Kinerja Pegawai', 'url' => 'ekas/laporan/kinerja-pegawai', 'icon' => 'ti ti-report-analytics', 'prefix' => 'ekas/laporan/kinerja-pegawai'],
+                        ['label' => 'Slip Gaji', 'url' => 'ekas/slip-gaji', 'icon' => 'ti ti-file-dollar', 'prefix' => 'ekas/slip-gaji'],
+                        ['label' => 'Persuratan', 'url' => 'ekas/persuratan', 'icon' => 'ti ti-mailbox', 'prefix' => 'ekas/persuratan'],
                     ],
                 ],
             ];

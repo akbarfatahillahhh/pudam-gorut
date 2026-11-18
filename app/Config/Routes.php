@@ -55,12 +55,12 @@ $routes->get('/laporan/rekapitulasi-piutang', 'Laporan\RekapitulasiPiutang::inde
 $routes->get('/ekas', 'Home::ekas');
 
 // master kas
-$routes->get('/master/perkiraan', 'Master\Perkiraan::index');
-$routes->get('/master/jabatan', 'Master\Jabatan::index');
-$routes->get('/master/tugas-pokok', 'Master\Pokok::index');
-$routes->get('/master/pokok', 'Master\Pokok::index');
-$routes->get('/master/pegawai', 'Master\Pegawai::index');
-$routes->get('/master/bank', 'Master\Bank::index');
+$routes->get('/ekas/master/perkiraan', 'Master\Perkiraan::index');
+$routes->get('/ekas/master/jabatan', 'Master\Jabatan::index');
+$routes->get('/ekas/master/tugas-pokok', 'Master\Pokok::index');
+$routes->get('/ekas/master/pokok', 'Master\Pokok::index');
+$routes->get('/ekas/master/pegawai', 'Master\Pegawai::index');
+$routes->get('/ekas/master/bank', 'Master\Bank::index');
 
 // kas
 $routes->get('/ekas/keluar', 'E_Kas\Pengeluaran\EntryKas_Keluar::index');
@@ -84,29 +84,57 @@ $routes->post('/e-kas/masuk/simpan', static fn () => redirect()->to(base_url('ek
 $routes->post('/e-kas/masuk-non-air/simpan', static fn () => redirect()->to(base_url('ekas/masuk-non-air/simpan'), 301));
 
 // logistik
-$routes->get('/faktur-pembelian', 'Logistik\BarangMasuk\Penerimaan::index');
-$routes->get('/barang-masuk/penerimaan', 'Logistik\BarangMasuk\Penerimaan::index');
+$routes->get('/ekas/faktur-pembelian', 'Logistik\BarangMasuk\Penerimaan::index');
+$routes->get('/ekas/barang-masuk/penerimaan', 'Logistik\BarangMasuk\Penerimaan::index');
 // /barang-masuk/laporan-penerimaan sengaja tidak didaftarkan: controller
 // Laporan_penerimaan belum ada (route lama menunjuk ke '??').
-$routes->get('/barang-keluar/permintaan', 'Logistik\BarangKeluar\Permintaan::index');
-$routes->get('/barang-Keluar/laporan-permintaan', 'Logistik\BarangKeluar\Laporan_permintaan::index');
-$routes->get('/gudang/barang', 'Logistik\Gudang\Barang::index');
-$routes->get('/gudang/cek-permintaan', 'Logistik\Gudang\CekPermintaan::index');
-$routes->get('/gudang/opname-stok', 'Logistik\Gudang\OpnameStok::index');
+$routes->get('/ekas/barang-keluar/permintaan', 'Logistik\BarangKeluar\Permintaan::index');
+$routes->get('/ekas/barang-keluar/laporan-permintaan', 'Logistik\BarangKeluar\Laporan_permintaan::index');
+$routes->get('/ekas/gudang/barang', 'Logistik\Gudang\Barang::index');
+$routes->get('/ekas/gudang/cek-permintaan', 'Logistik\Gudang\CekPermintaan::index');
+$routes->get('/ekas/gudang/opname-stok', 'Logistik\Gudang\OpnameStok::index');
 
 // laporan kas
-$routes->get('/laporan/rekap-persediaan', 'Laporan\RekapPersediaan::index');
-$routes->get('/laporan/daftar-hadir', 'Laporan\DaftarHadir::index');
-$routes->get('/laporan/daftar-hadir/pdf/(:segment)/(:segment)/(:segment)', 'Laporan\DaftarHadir::pdf/$1/$2/$3');
-$routes->get('/laporan/kinerja-pegawai', 'Laporan\KinerjaPegawai::index');
-$routes->get('/laporan/kinerja-pegawai/data', 'Laporan\KinerjaPegawai::data');
-$routes->get('/laporan/kinerja-pegawai/detail', 'Laporan\KinerjaPegawai::detail');
-$routes->get('/laporan/kinerja-pegawai/pdf/(:segment)', 'Laporan\KinerjaPegawai::pdf/$1');
+$routes->get('/ekas/laporan/rekap-persediaan', 'Laporan\RekapPersediaan::index');
+$routes->get('/ekas/laporan/daftar-hadir', 'Laporan\DaftarHadir::index');
+$routes->get('/ekas/laporan/daftar-hadir/pdf/(:segment)/(:segment)/(:segment)', 'Laporan\DaftarHadir::pdf/$1/$2/$3');
+$routes->get('/ekas/laporan/kinerja-pegawai', 'Laporan\KinerjaPegawai::index');
+$routes->get('/ekas/laporan/kinerja-pegawai/data', 'Laporan\KinerjaPegawai::data');
+$routes->get('/ekas/laporan/kinerja-pegawai/detail', 'Laporan\KinerjaPegawai::detail');
+$routes->get('/ekas/laporan/kinerja-pegawai/pdf/(:segment)', 'Laporan\KinerjaPegawai::pdf/$1');
 
 // kepegawaian
-$routes->get('/absensi', 'Absensi::unit');
-$routes->get('/slip-gaji', 'SlipGaji::index');
-$routes->get('/persuratan', 'Persuratan::index');
+$routes->get('/ekas/absensi', 'Absensi::unit');
+$routes->get('/ekas/slip-gaji', 'SlipGaji::index');
+$routes->get('/ekas/persuratan', 'Persuratan::index');
+
+// =====================================================================
+// URL LAMA MODUL E-KAS -> redirect 301 ke prefix /ekas
+// Supaya bookmark dan link lama tidak mati.
+// =====================================================================
+foreach ([
+    'master/perkiraan',
+    'master/jabatan',
+    'master/tugas-pokok',
+    'master/pokok',
+    'master/pegawai',
+    'master/bank',
+    'faktur-pembelian',
+    'barang-masuk/penerimaan',
+    'barang-keluar/permintaan',
+    'barang-keluar/laporan-permintaan',
+    'gudang/barang',
+    'gudang/cek-permintaan',
+    'gudang/opname-stok',
+    'laporan/rekap-persediaan',
+    'laporan/daftar-hadir',
+    'laporan/kinerja-pegawai',
+    'absensi',
+    'slip-gaji',
+    'persuratan',
+] as $lama) {
+    $routes->get('/' . $lama, static fn () => redirect()->to(base_url('ekas/' . $lama), 301));
+}
 
 // =====================================================================
 // ADMIN (berlaku di kedua sistem)

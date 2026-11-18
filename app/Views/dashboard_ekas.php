@@ -109,23 +109,39 @@
     <div class="col-12">
         <div class="card overflow-hidden border border-dark">
             <div class="card-body p-4">
-                <h5 class="card-title mb-3 fw-semibold">Menu Cepat E-Kas</h5>
-                <div class="d-flex flex-wrap gap-2">
-                    <a href="<?= base_url('e-kas/keluar') ?>" class="btn btn-sm btn-primary">
-                        <i class="fa-solid fa-money-bill-transfer me-1"></i> Kas Pengeluaran
-                    </a>
-                    <a href="<?= base_url('e-kas/riwayat') ?>" class="btn btn-sm btn-outline-primary">
-                        <i class="fas fa-history me-1"></i> Riwayat Kas
-                    </a>
-                    <a href="<?= base_url('faktur-pembelian') ?>" class="btn btn-sm btn-outline-dark">
-                        <i class="fa-solid fa-right-to-bracket me-1"></i> Faktur Pembelian
-                    </a>
-                    <a href="<?= base_url('gudang/opname-stok') ?>" class="btn btn-sm btn-outline-dark">
-                        <i class="fas fa-clipboard-list me-1"></i> Opname Stok
-                    </a>
-                    <a href="<?= base_url('laporan/rekap-persediaan') ?>" class="btn btn-sm btn-outline-dark">
-                        <i class="fa-solid fa-chart-column me-1"></i> Rekap Persediaan
-                    </a>
+                <div class="mb-3">
+                    <h5 class="card-title mb-0 fw-semibold">Menu Cepat</h5>
+                    <span class="fs-2 text-muted">Pintasan ke pekerjaan yang sering dipakai</span>
+                </div>
+
+                <div class="rounded border border-dark overflow-hidden">
+                    <?php
+                    // Semua pintasan seragam, tidak ada yang disorot.
+                    // Tiap item: url, label, keterangan, ikon.
+                    $pintasan = [
+                        ['url' => 'e-kas/keluar', 'label' => 'Kas Pengeluaran', 'ket' => 'Catat voucher pengeluaran kas harian', 'icon' => 'ti ti-cash-banknote'],
+                        ['url' => 'e-kas/riwayat', 'label' => 'Riwayat Kas', 'ket' => 'Telusuri voucher yang sudah dibuat', 'icon' => 'ti ti-history'],
+                        ['url' => 'faktur-pembelian', 'label' => 'Faktur Pembelian', 'ket' => 'Input penerimaan barang masuk', 'icon' => 'ti ti-file-invoice'],
+                        ['url' => 'gudang/opname-stok', 'label' => 'Opname Stok', 'ket' => 'Hitung dan sesuaikan stok gudang', 'icon' => 'ti ti-clipboard-list'],
+                        ['url' => 'laporan/rekap-persediaan', 'label' => 'Rekap Persediaan', 'ket' => 'Laporan posisi persediaan', 'icon' => 'ti ti-chart-pie'],
+                    ];
+                    ?>
+
+                    <?php foreach ($pintasan as $i => $item): ?>
+                        <a href="<?= base_url($item['url']) ?>"
+                            class="d-flex align-items-center gap-3 p-3 text-decoration-none text-black
+                                <?= $i < count($pintasan) - 1 ? 'border-bottom border-dark' : '' ?>">
+                            <span class="d-flex align-items-center justify-content-center rounded bg-light flex-shrink-0"
+                                style="width: 38px; height: 38px;">
+                                <i class="<?= esc($item['icon'], 'attr') ?> fs-5"></i>
+                            </span>
+                            <span class="flex-grow-1">
+                                <span class="d-block fw-semibold"><?= esc($item['label']) ?></span>
+                                <span class="d-block fs-2 text-muted"><?= esc($item['ket']) ?></span>
+                            </span>
+                            <i class="ti ti-chevron-right fs-4 text-muted flex-shrink-0"></i>
+                        </a>
+                    <?php endforeach; ?>
                 </div>
             </div>
         </div>

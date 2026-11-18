@@ -1,5 +1,9 @@
 </div>
 <script src="<?= base_url() ?>/assets/libs/bootstrap/dist/js/bootstrap.bundle.min.js?v=<?= filemtime(FCPATH . 'assets/libs/bootstrap/dist/js/bootstrap.bundle.min.js') ?>"></script>
+<!-- Bootstrap 5 mencabut plugin jQuery; jembatan ini memulihkan
+     $('#modal').modal('show') yang dipakai banyak view lama.
+     Harus dimuat setelah bootstrap.bundle.min.js dan jQuery. -->
+<script src="<?= base_url() ?>/assets/js/bootstrap5-jquery-bridge.js?v=<?= filemtime(FCPATH . 'assets/js/bootstrap5-jquery-bridge.js') ?>"></script>
 <script src="<?= base_url() ?>/assets/js/dashboard.js?v=<?= filemtime(FCPATH . 'assets/js/dashboard.js') ?>"></script>
 <script src="<?= base_url() ?>/assets/js/app.min.js"></script>
 <!-- <script src="<?= base_url() ?>/assets/js/sidebarmenu.js"></script> -->

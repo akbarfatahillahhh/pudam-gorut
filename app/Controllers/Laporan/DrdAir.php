@@ -110,6 +110,30 @@ class DrdAir extends BaseController
 
         $ket = $this->keterangan($filter);
 
+        // Batas aman PDF. Satu bulan penuh (±3.600 baris) butuh sekitar
+        // 25 detik; dua bulan sudah menembus max_execution_time 30 detik
+        // di mPDF. Tolak lebih awal dengan pesan yang jelas, jangan
+        // dibiarkan timeout tanpa keterangan.
+        $batasBaris = 4500;
+
+        $jumlahBaris = $this->queryDrd($filter)->countAllResults(false);
+
+        if ($jumlahBaris > $batasBaris) {
+            $pesan = 'Data terlalu banyak untuk diekspor sekali jalan: '
+                . number_format($jumlahBaris, 0, ',', '.') . ' baris (batas '
+                . number_format($batasBaris, 0, ',', '.') . ').'
+                . ' Persempit periode atau pakai filter unit/kelurahan.';
+
+            if ($this->request->isAJAX()) {
+                return $this->response->setStatusCode(413)->setJSON([
+                    'status' => 'error',
+                    'msg'    => $pesan,
+                ]);
+            }
+
+            return $this->response->setStatusCode(413)->setBody($pesan);
+        }
+
         $mpdf = new \Mpdf\Mpdf([
             'mode'              => 'utf-8',
             'format'            => 'A4',
@@ -229,6 +253,7 @@ class DrdAir extends BaseController
                 m_pelanggan.id_kec,
                 m_pelanggan.id_kelurahan,
 
+                t_tagihan.id_pemakaian,
                 t_tagihan.no_rek,
                 t_tagihan.tag_dibawah_10,
                 t_tagihan.tag_diatas_10,
@@ -286,8 +311,15 @@ class DrdAir extends BaseController
             $builder->where('m_pelanggan.id_kelurahan', (int) $f['kel']);
         }
 
+        // Kunci urutan WAJIB unik: export_pdf() membaca data per potongan
+        // (LIMIT/OFFSET), dan kalau kuncinya tidak unik baris yang sama
+        // bisa muncul dua kali atau terlewat di batas potongan. Satu
+        // pelanggan bisa punya 15 baris (satu per bulan) dalam rentang
+        // setahun, jadi no_sambungan+id_kec saja tidak cukup.
         $builder->orderBy('m_pelanggan.no_sambungan', 'ASC');
         $builder->orderBy('m_pelanggan.id_kec', 'ASC');
+        $builder->orderBy('t_tagihan.bulan_tagihan', 'DESC');
+        $builder->orderBy('t_tagihan.id_pemakaian', 'ASC');
 
         return $builder;
     }
@@ -295,9 +327,20 @@ class DrdAir extends BaseController
     /**
      * PMK (pemakaian m3).
      *
-     * Diturunkan dari tagihan, bukan selisih meter: 7.914 baris tahun
-     * 2026 punya pemakaian_air_lalu = 0 padahal pemakaian_air-nya
-     * ribuan (sisa input piutang lama), jadi selisihnya meledak.
+     * Dua sumber, dipakai berurutan:
+     *
+     * 1. Kalau tagihan punya tag_diatas_10, kubikasi pasti di atas 10:
+     *    10 + (tag_diatas_10 / tarif_diatas_10). Ini juga satu-satunya
+     *    cara untuk baris yang pemakaian_air_lalu-nya 0 (7.914 baris
+     *    2026) karena selisih meter di situ tidak bermakna.
+     * 2. Selain itu pakai selisih meter apa adanya, dibatasi 0..10.
+     *    Selisih di bawah 10 memang nyata: dari 21.547 baris dengan
+     *    pemakaian_air_lalu > 0, sebarannya 0..10 dan tidak ada satu pun
+     *    yang bertentangan dengan tag_diatas_10.
+     *
+     * Jangan asal mengembalikan 10 saat tag_diatas_10 = 0. Percobaan
+     * sebelumnya melakukan itu dan melebihkan total kubikasi setahun
+     * sebesar 68.168 m3 (455.777 vs 387.609 yang sebenarnya).
      */
     private function getPemakaian($row): int
     {
@@ -308,7 +351,11 @@ class DrdAir extends BaseController
             return (int) round(10 + $tagAtas / $tarifAtas);
         }
 
-        return 10;
+        $meterIni  = (float) ($row->pemakaian_air ?? 0);
+        $meterLalu = (float) ($row->pemakaian_air_lalu ?? 0);
+        $selisih   = $meterIni - $meterLalu;
+
+        return (int) max(0, min(10, $selisih));
     }
 
     /**

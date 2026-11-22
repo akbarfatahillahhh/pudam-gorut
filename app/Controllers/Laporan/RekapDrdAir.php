@@ -60,14 +60,26 @@ class RekapDrdAir extends BaseController
 
             $builder = $this->db->table('t_tagihan')
                 ->select('
-                    SUM(pemakaian_air) as pemakaian_air, 
-                    COUNT(id_pemakaian) as rekening, 
-                    SUM(tag_dibawah_10) as dibawah10, 
-                    tarif_dibawah_10 as tagdibawah10, 
-                    tarif_diatas_10 as tagdiatas10, 
-                    SUM(tag_diatas_10) as diatas10, 
-                    SUM(by_admin) as beadmin
-                ')
+                    COUNT(id_pemakaian) AS rekening,
+                    IFNULL(SUM(CAST(tag_dibawah_10 AS SIGNED)), 0) AS dibawah10,
+                    IFNULL(SUM(CAST(tag_diatas_10 AS SIGNED)), 0) AS diatas10,
+                    IFNULL(SUM(CAST(by_admin AS SIGNED)), 0) AS beadmin,
+                    SUM(CASE
+                        WHEN CAST(tarif_diatas_10 AS DECIMAL(12,2)) > 0
+                             AND CAST(tag_diatas_10 AS SIGNED) > 0
+                        THEN 10 + ROUND(CAST(tag_diatas_10 AS SIGNED) / CAST(tarif_diatas_10 AS DECIMAL(12,2)))
+                        ELSE 10
+                    END) AS kub_atas,
+                    SUM(LEAST(
+                        CASE
+                            WHEN CAST(tarif_diatas_10 AS DECIMAL(12,2)) > 0
+                                 AND CAST(tag_diatas_10 AS SIGNED) > 0
+                            THEN 10 + ROUND(CAST(tag_diatas_10 AS SIGNED) / CAST(tarif_diatas_10 AS DECIMAL(12,2)))
+                            ELSE LEAST(10, GREATEST(0,
+                                 CAST(pemakaian_air AS SIGNED) - CAST(pemakaian_air_lalu AS SIGNED)))
+                        END,
+                        10)) AS kub_bawah
+                ', false)
                 ->where('bulan_tagihan >=', $dateStart)
                 ->where('bulan_tagihan <=', $dateEnd)
                 ->where('id_jenis', $idJenis);
@@ -89,13 +101,12 @@ class RekapDrdAir extends BaseController
             // $jumlah = $biayaair + $query['beadmin'];
             $jumlah = $biayaair + $beadmin;
 
-            $tarifB = $query['tagdibawah10'];
-            $kBawa = ($tarifB > 0) ? $query['dibawah10'] / $tarifB : $kBawa = 0;
-
-            $tarifA = $query['tagdiatas10'];
-            $kAtas = ($tarifA > 0) ? ($query['diatas10'] / $tarifA) : $kAtas = 0;
-
-            $kubukasi = $kAtas + $kBawa;
+            // Kubikasi dari query, bukan dibawah10/tarif_dibawah_10:
+            // tag_dibawah_10 selalu 10 x tarif, jadi bagiannya menghasilkan
+            // PERSIS 10 x jumlah rekening — bukan kubikasi.
+            $kBawa    = (int) ($query['kub_bawah'] ?? 0);
+            $kAtas    = max(0, (int) ($query['kub_atas'] ?? 0) - $kBawa);
+            $kubukasi = $kBawa + $kAtas;
 
             $totalPelanggan = $this->db->table('m_pelanggan')
                 ->select('COUNT(DISTINCT id_pelanggan) as totalPelanggan')
@@ -132,14 +143,26 @@ class RekapDrdAir extends BaseController
 
             $builder = $this->db->table('t_tagihan')
                 ->select('
-                    SUM(pemakaian_air) as pemakaian_air, 
-                    COUNT(id_pemakaian) as rekening, 
-                    SUM(tag_dibawah_10) as dibawah10, 
-                    tarif_dibawah_10 as tagdibawah10, 
-                    tarif_diatas_10 as tagdiatas10, 
-                    SUM(tag_diatas_10) as diatas10, 
-                    SUM(by_admin) as beadmin
-                ')
+                    COUNT(id_pemakaian) AS rekening,
+                    IFNULL(SUM(CAST(tag_dibawah_10 AS SIGNED)), 0) AS dibawah10,
+                    IFNULL(SUM(CAST(tag_diatas_10 AS SIGNED)), 0) AS diatas10,
+                    IFNULL(SUM(CAST(by_admin AS SIGNED)), 0) AS beadmin,
+                    SUM(CASE
+                        WHEN CAST(tarif_diatas_10 AS DECIMAL(12,2)) > 0
+                             AND CAST(tag_diatas_10 AS SIGNED) > 0
+                        THEN 10 + ROUND(CAST(tag_diatas_10 AS SIGNED) / CAST(tarif_diatas_10 AS DECIMAL(12,2)))
+                        ELSE 10
+                    END) AS kub_atas,
+                    SUM(LEAST(
+                        CASE
+                            WHEN CAST(tarif_diatas_10 AS DECIMAL(12,2)) > 0
+                                 AND CAST(tag_diatas_10 AS SIGNED) > 0
+                            THEN 10 + ROUND(CAST(tag_diatas_10 AS SIGNED) / CAST(tarif_diatas_10 AS DECIMAL(12,2)))
+                            ELSE LEAST(10, GREATEST(0,
+                                 CAST(pemakaian_air AS SIGNED) - CAST(pemakaian_air_lalu AS SIGNED)))
+                        END,
+                        10)) AS kub_bawah
+                ', false)
                 ->where('bulan_tagihan >=', $dateStart)
                 ->where('bulan_tagihan <=', $dateEnd)
                 ->where('id_jenis', $idJenis);
@@ -161,13 +184,12 @@ class RekapDrdAir extends BaseController
             // $jumlah = $biayaair + $query['beadmin'];
             $jumlah = $biayaair + $beadmin;
 
-            $tarifB = $query['tagdibawah10'];
-            $kBawa = ($tarifB > 0) ? $query['dibawah10'] / $tarifB : $kBawa = 0;
-
-            $tarifA = $query['tagdiatas10'];
-            $kAtas = ($tarifA > 0) ? ($query['diatas10'] / $tarifA) : $kAtas = 0;
-
-            $kubukasi = $kAtas + $kBawa;
+            // Kubikasi dari query, bukan dibawah10/tarif_dibawah_10:
+            // tag_dibawah_10 selalu 10 x tarif, jadi bagiannya menghasilkan
+            // PERSIS 10 x jumlah rekening — bukan kubikasi.
+            $kBawa    = (int) ($query['kub_bawah'] ?? 0);
+            $kAtas    = max(0, (int) ($query['kub_atas'] ?? 0) - $kBawa);
+            $kubukasi = $kBawa + $kAtas;
 
             $totalPelanggan = $this->db->table('m_pelanggan')
                 ->select('COUNT(DISTINCT id_pelanggan) as totalPelanggan')
@@ -243,14 +265,26 @@ class RekapDrdAir extends BaseController
 
                 $builder = $this->db->table('t_tagihan')
                     ->select('
-                    SUM(pemakaian_air) as pemakaian_air, 
-                    COUNT(id_pemakaian) as rekening, 
-                    SUM(tag_dibawah_10) as dibawah10, 
-                    tarif_dibawah_10 as tagdibawah10, 
-                    tarif_diatas_10 as tagdiatas10, 
-                    SUM(tag_diatas_10) as diatas10, 
-                    SUM(by_admin) as beadmin
-                ')
+                    COUNT(id_pemakaian) AS rekening,
+                    IFNULL(SUM(CAST(tag_dibawah_10 AS SIGNED)), 0) AS dibawah10,
+                    IFNULL(SUM(CAST(tag_diatas_10 AS SIGNED)), 0) AS diatas10,
+                    IFNULL(SUM(CAST(by_admin AS SIGNED)), 0) AS beadmin,
+                    SUM(CASE
+                        WHEN CAST(tarif_diatas_10 AS DECIMAL(12,2)) > 0
+                             AND CAST(tag_diatas_10 AS SIGNED) > 0
+                        THEN 10 + ROUND(CAST(tag_diatas_10 AS SIGNED) / CAST(tarif_diatas_10 AS DECIMAL(12,2)))
+                        ELSE 10
+                    END) AS kub_atas,
+                    SUM(LEAST(
+                        CASE
+                            WHEN CAST(tarif_diatas_10 AS DECIMAL(12,2)) > 0
+                                 AND CAST(tag_diatas_10 AS SIGNED) > 0
+                            THEN 10 + ROUND(CAST(tag_diatas_10 AS SIGNED) / CAST(tarif_diatas_10 AS DECIMAL(12,2)))
+                            ELSE LEAST(10, GREATEST(0,
+                                 CAST(pemakaian_air AS SIGNED) - CAST(pemakaian_air_lalu AS SIGNED)))
+                        END,
+                        10)) AS kub_bawah
+                ', false)
                     ->where('bulan_tagihan >=', $dateStart)
                     ->where('bulan_tagihan <=', $dateEnd)
                     ->where('id_jenis', $idJenis);
@@ -271,13 +305,11 @@ class RekapDrdAir extends BaseController
                 // $jumlah = $biayaair + $query['beadmin'];
                 $jumlah = $biayaair + $beadmin;
 
-                $tarifB = $query['tagdibawah10'];
-                $kBawa = ($tarifB > 0) ? $query['dibawah10'] / $tarifB : $kBawa = 0;
-
-                $tarifA = $query['tagdiatas10'];
-                $kAtas = ($tarifA > 0) ? ($query['diatas10'] / $tarifA) : $kAtas = 0;
-
-                $kubukasi = $kAtas + $kBawa;
+                // Sama seperti datatable: kubikasi dari query, bukan
+                // dibawah10/tarif_dibawah_10 (selalu 10 x rekening).
+                $kBawa    = (int) ($query['kub_bawah'] ?? 0);
+                $kAtas    = max(0, (int) ($query['kub_atas'] ?? 0) - $kBawa);
+                $kubukasi = $kBawa + $kAtas;
 
                 $totalPelanggan = $this->db->table('m_pelanggan')
                     ->select('COUNT(DISTINCT id_pelanggan) as totalPelanggan')
@@ -333,14 +365,26 @@ class RekapDrdAir extends BaseController
 
                 $builder = $this->db->table('t_tagihan')
                     ->select('
-                    SUM(pemakaian_air) as pemakaian_air, 
-                    COUNT(id_pemakaian) as rekening, 
-                    SUM(tag_dibawah_10) as dibawah10, 
-                    tarif_dibawah_10 as tagdibawah10, 
-                    tarif_diatas_10 as tagdiatas10, 
-                    SUM(tag_diatas_10) as diatas10, 
-                    SUM(by_admin) as beadmin
-                ')
+                    COUNT(id_pemakaian) AS rekening,
+                    IFNULL(SUM(CAST(tag_dibawah_10 AS SIGNED)), 0) AS dibawah10,
+                    IFNULL(SUM(CAST(tag_diatas_10 AS SIGNED)), 0) AS diatas10,
+                    IFNULL(SUM(CAST(by_admin AS SIGNED)), 0) AS beadmin,
+                    SUM(CASE
+                        WHEN CAST(tarif_diatas_10 AS DECIMAL(12,2)) > 0
+                             AND CAST(tag_diatas_10 AS SIGNED) > 0
+                        THEN 10 + ROUND(CAST(tag_diatas_10 AS SIGNED) / CAST(tarif_diatas_10 AS DECIMAL(12,2)))
+                        ELSE 10
+                    END) AS kub_atas,
+                    SUM(LEAST(
+                        CASE
+                            WHEN CAST(tarif_diatas_10 AS DECIMAL(12,2)) > 0
+                                 AND CAST(tag_diatas_10 AS SIGNED) > 0
+                            THEN 10 + ROUND(CAST(tag_diatas_10 AS SIGNED) / CAST(tarif_diatas_10 AS DECIMAL(12,2)))
+                            ELSE LEAST(10, GREATEST(0,
+                                 CAST(pemakaian_air AS SIGNED) - CAST(pemakaian_air_lalu AS SIGNED)))
+                        END,
+                        10)) AS kub_bawah
+                ', false)
                     ->where('bulan_tagihan >=', $dateStart)
                     ->where('bulan_tagihan <=', $dateEnd)
                     ->where('id_jenis', $idJenis);
@@ -362,13 +406,11 @@ class RekapDrdAir extends BaseController
                 $jumlah = $biayaair + $beadmin;
 
 
-                $tarifB = $query['tagdibawah10'];
-                $kBawa = ($tarifB > 0) ? $query['dibawah10'] / $tarifB : $kBawa = 0;
-
-                $tarifA = $query['tagdiatas10'];
-                $kAtas = ($tarifA > 0) ? ($query['diatas10'] / $tarifA) : $kAtas = 0;
-
-                $kubukasi = $kAtas + $kBawa;
+                // Sama seperti datatable: kubikasi dari query, bukan
+                // dibawah10/tarif_dibawah_10 (selalu 10 x rekening).
+                $kBawa    = (int) ($query['kub_bawah'] ?? 0);
+                $kAtas    = max(0, (int) ($query['kub_atas'] ?? 0) - $kBawa);
+                $kubukasi = $kBawa + $kAtas;
 
                 $totalPelanggan = $this->db->table('m_pelanggan')
                     ->select('COUNT(DISTINCT id_pelanggan) as totalPelanggan')

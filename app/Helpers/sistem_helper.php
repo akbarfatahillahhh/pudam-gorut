@@ -75,6 +75,7 @@ if (!function_exists('sistem_peta_prefix')) {
             'billing'                        => SISTEM_BILLING,
             'home/billing'                   => SISTEM_BILLING,
             'pelanggan'                      => SISTEM_BILLING,
+            'billing/loket'                  => SISTEM_BILLING,
 
             // master billing
             'master/pelanggan'               => SISTEM_BILLING,
@@ -546,6 +547,7 @@ if (!function_exists('sistem_menu')) {
                 'judul' => 'Billing',
                 'items' => [
                     ['label' => 'Pelanggan', 'url' => 'billing/pelanggan', 'icon' => 'ti ti-users', 'id' => 'pelanggan_menu', 'prefix' => 'billing/pelanggan'],
+                    ['label' => 'Loket Pembayaran', 'url' => 'billing/loket', 'icon' => 'ti ti-cash-banknote', 'id' => 'loket_menu', 'prefix' => 'billing/loket'],
                 ],
             ],
             [

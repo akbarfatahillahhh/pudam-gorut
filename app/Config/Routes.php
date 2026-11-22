@@ -30,6 +30,10 @@ $routes->post('/login', 'Login::login');
 $routes->get('/billing', 'Home::billing');
 $routes->get('/billing/pelanggan', 'Pelanggan::index');
 
+// loket pembayaran
+$routes->get('/billing/loket', 'Billing\Loket::index');
+$routes->get('/billing/loket/kwitansi_pdf/(:segment)', 'Billing\Loket::kwitansi_pdf/$1');
+
 // master billing
 $routes->get('/billing/master/set-kelompok-tarif', 'Master\SetKelompokTarif::index');
 $routes->get('/billing/master/set-jenis-pelanggan', 'Master\SetJenisPelanggan::index');

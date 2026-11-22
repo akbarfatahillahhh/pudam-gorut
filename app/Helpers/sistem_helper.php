@@ -68,6 +68,10 @@ if (!function_exists('sistem_peta_prefix')) {
     {
         return [
             // ===== BILLING =====
+            // Semua halaman Billing ada di bawah prefix /billing.
+            // Prefix lama tetap dipetakan supaya URL lama yang belum
+            // ter-redirect dan endpoint AJAX autoRoute tetap terdeteksi
+            // sebagai milik sistem billing.
             'billing'                        => SISTEM_BILLING,
             'home/billing'                   => SISTEM_BILLING,
             'pelanggan'                      => SISTEM_BILLING,
@@ -142,7 +146,10 @@ if (!function_exists('sistem_prefix_admin')) {
     function sistem_prefix_admin(): array
     {
         return [
-            // master billing
+            // master billing (halaman berprefix /billing; URL lama tetap
+            // didaftarkan supaya bookmark lama yang belum ter-redirect
+            // tetap tertutup untuk non-admin).
+            'billing/master',
             'master/pelanggan',
             'master/pasang-meter',
             'master/set-kelompok-tarif',
@@ -538,7 +545,7 @@ if (!function_exists('sistem_menu')) {
             [
                 'judul' => 'Billing',
                 'items' => [
-                    ['label' => 'Pelanggan', 'url' => 'pelanggan', 'icon' => 'ti ti-users', 'id' => 'pelanggan_menu', 'prefix' => 'pelanggan'],
+                    ['label' => 'Pelanggan', 'url' => 'billing/pelanggan', 'icon' => 'ti ti-users', 'id' => 'pelanggan_menu', 'prefix' => 'billing/pelanggan'],
                 ],
             ],
             [
@@ -548,21 +555,21 @@ if (!function_exists('sistem_menu')) {
                     [
                         'label'    => 'Master Pelanggan',
                         'icon'     => 'ti ti-user-circle',
-                        'prefix'   => 'master/pelanggan|master/pasang-meter|master/set-kelompok-tarif|master/set-jenis-pelanggan',
+                        'prefix'   => 'billing/master/pelanggan|billing/master/pasang-meter|billing/master/set-kelompok-tarif|billing/master/set-jenis-pelanggan',
                         'children' => [
-                            ['label' => 'Daftar Pelanggan', 'url' => 'master/pelanggan', 'icon' => 'ti ti-users', 'prefix' => 'master/pelanggan'],
-                            ['label' => 'Kelompok Tarif', 'url' => 'master/set-kelompok-tarif', 'icon' => 'ti ti-tags', 'prefix' => 'master/set-kelompok-tarif'],
-                            ['label' => 'Jenis Pelanggan', 'url' => 'master/set-jenis-pelanggan', 'icon' => 'ti ti-copy', 'prefix' => 'master/set-jenis-pelanggan'],
+                            ['label' => 'Daftar Pelanggan', 'url' => 'billing/master/pelanggan', 'icon' => 'ti ti-users', 'prefix' => 'billing/master/pelanggan'],
+                            ['label' => 'Kelompok Tarif', 'url' => 'billing/master/set-kelompok-tarif', 'icon' => 'ti ti-tags', 'prefix' => 'billing/master/set-kelompok-tarif'],
+                            ['label' => 'Jenis Pelanggan', 'url' => 'billing/master/set-jenis-pelanggan', 'icon' => 'ti ti-copy', 'prefix' => 'billing/master/set-jenis-pelanggan'],
                         ],
                     ],
                     [
                         'label'    => 'Master Wilayah',
                         'icon'     => 'ti ti-map-pins',
-                        'prefix'   => 'master/kabupaten|master/kecamatan|master/kelurahan',
+                        'prefix'   => 'billing/master/kabupaten|billing/master/kecamatan|billing/master/kelurahan',
                         'children' => [
-                            ['label' => 'Kabupaten', 'url' => 'master/kabupaten', 'icon' => 'ti ti-building-community', 'prefix' => 'master/kabupaten'],
-                            ['label' => 'Kecamatan', 'url' => 'master/kecamatan', 'icon' => 'ti ti-map-2', 'prefix' => 'master/kecamatan'],
-                            ['label' => 'Kelurahan', 'url' => 'master/kelurahan', 'icon' => 'ti ti-map-pin', 'prefix' => 'master/kelurahan'],
+                            ['label' => 'Kabupaten', 'url' => 'billing/master/kabupaten', 'icon' => 'ti ti-building-community', 'prefix' => 'billing/master/kabupaten'],
+                            ['label' => 'Kecamatan', 'url' => 'billing/master/kecamatan', 'icon' => 'ti ti-map-2', 'prefix' => 'billing/master/kecamatan'],
+                            ['label' => 'Kelurahan', 'url' => 'billing/master/kelurahan', 'icon' => 'ti ti-map-pin', 'prefix' => 'billing/master/kelurahan'],
                         ],
                     ],
                 ],
@@ -570,11 +577,11 @@ if (!function_exists('sistem_menu')) {
             [
                 'judul' => 'Laporan',
                 'items' => [
-                    ['label' => 'DRD Air', 'url' => 'laporan/drd-air', 'icon' => 'ti ti-droplet', 'prefix' => 'laporan/drd-air'],
-                    ['label' => 'DRD Unit/Jenis', 'url' => 'laporan/rekap-drd-air', 'icon' => 'ti ti-chart-pie', 'prefix' => 'laporan/rekap-drd-air'],
-                    ['label' => 'Rincian Piutang Perunit', 'url' => 'laporan/rincian-piutang-perunit', 'icon' => 'ti ti-chart-dots', 'prefix' => 'laporan/rincian-piutang-perunit'],
-                    ['label' => 'Pelanggan Duplikat', 'url' => 'laporan/pelanggan-duplikat', 'icon' => 'ti ti-file-analytics', 'prefix' => 'laporan/pelanggan-duplikat'],
-                    ['label' => 'Rekapitulasi Piutang', 'url' => 'laporan/rekapitulasi-piutang', 'icon' => 'ti ti-report-analytics', 'prefix' => 'laporan/rekapitulasi-piutang'],
+                    ['label' => 'DRD Air', 'url' => 'billing/laporan/drd-air', 'icon' => 'ti ti-droplet', 'prefix' => 'billing/laporan/drd-air'],
+                    ['label' => 'DRD Unit/Jenis', 'url' => 'billing/laporan/rekap-drd-air', 'icon' => 'ti ti-chart-pie', 'prefix' => 'billing/laporan/rekap-drd-air'],
+                    ['label' => 'Rincian Piutang Perunit', 'url' => 'billing/laporan/rincian-piutang-perunit', 'icon' => 'ti ti-chart-dots', 'prefix' => 'billing/laporan/rincian-piutang-perunit'],
+                    ['label' => 'Pelanggan Duplikat', 'url' => 'billing/laporan/pelanggan-duplikat', 'icon' => 'ti ti-file-analytics', 'prefix' => 'billing/laporan/pelanggan-duplikat'],
+                    ['label' => 'Rekapitulasi Piutang', 'url' => 'billing/laporan/rekapitulasi-piutang', 'icon' => 'ti ti-report-analytics', 'prefix' => 'billing/laporan/rekapitulasi-piutang'],
                 ],
             ],
             [

@@ -127,7 +127,7 @@
     function pasangMeter() {
         $.ajax({
             type: "get",
-            url: "<?= base_url('/master/pasang-meter') ?>",
+            url: "<?= base_url('billing/master/pasang-meter') ?>",
             dataType: "json",
             success: function(response) {
                 $('.container-fluid').html(response.html);

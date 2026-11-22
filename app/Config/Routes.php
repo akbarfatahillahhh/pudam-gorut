@@ -57,6 +57,7 @@ $routes->get('/billing/laporan/pelanggan-duplikat', 'Laporan\PelangganDuplikat::
 $routes->get('/billing/laporan/rekapitulasi-piutang', 'Laporan\RekapitulasiPiutang::index');
 $routes->get('/billing/laporan/lpp-berjalan', 'Laporan\LppBerjalan::index');
 $routes->get('/billing/laporan/lpp-petugas', 'Laporan\LppPetugas::index');
+$routes->get('/billing/laporan/tunggakan-per-unit', 'Laporan\TunggakanPerUnit::index');
 
 // =====================================================================
 // URL LAMA MODUL BILLING -> redirect 301 ke prefix /billing
@@ -82,6 +83,7 @@ foreach ([
     'laporan/rekapitulasi-piutang',
     'laporan/lpp-berjalan',
     'laporan/lpp-petugas',
+    'laporan/tunggakan-per-unit',
 ] as $lamaBilling) {
     $routes->get('/' . $lamaBilling, static fn () => redirect()->to(base_url('billing/' . $lamaBilling), 301));
 }

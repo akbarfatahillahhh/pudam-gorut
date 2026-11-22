@@ -96,6 +96,7 @@ if (!function_exists('sistem_peta_prefix')) {
             'laporan/rekapitulasi-piutang'   => SISTEM_BILLING,
             'laporan/lpp-berjalan'           => SISTEM_BILLING,
             'laporan/lpp-petugas'            => SISTEM_BILLING,
+            'laporan/tunggakan-per-unit'     => SISTEM_BILLING,
 
             // ===== KAS (E-KAS) =====
             'ekas'                           => SISTEM_KAS,
@@ -601,6 +602,7 @@ if (!function_exists('sistem_menu')) {
                     ['label' => 'Rekapitulasi Piutang', 'url' => 'billing/laporan/rekapitulasi-piutang', 'icon' => 'ti ti-report-analytics', 'prefix' => 'billing/laporan/rekapitulasi-piutang'],
                     ['label' => 'LPP Air Periodik', 'url' => 'billing/laporan/lpp-berjalan', 'icon' => 'ti ti-file-report', 'prefix' => 'billing/laporan/lpp-berjalan'],
                     ['label' => 'LPP Per Petugas', 'url' => 'billing/laporan/lpp-petugas', 'icon' => 'ti ti-user-check', 'prefix' => 'billing/laporan/lpp-petugas'],
+                    ['label' => 'Rincian Tunggakan per Unit', 'url' => 'billing/laporan/tunggakan-per-unit', 'icon' => 'ti ti-file-search', 'prefix' => 'billing/laporan/tunggakan-per-unit'],
                 ],
             ],
             [

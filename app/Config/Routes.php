@@ -56,6 +56,7 @@ $routes->get('/ekas', 'Home::ekas');
 
 // master kas
 $routes->get('/ekas/master/perkiraan', 'Master\Perkiraan::index');
+$routes->get('/ekas/master/perkiraan-group', 'Master\PerkiraanGroup::index');
 $routes->get('/ekas/master/jabatan', 'Master\Jabatan::index');
 $routes->get('/ekas/master/tugas-pokok', 'Master\Pokok::index');
 $routes->get('/ekas/master/pokok', 'Master\Pokok::index');
@@ -114,6 +115,7 @@ $routes->get('/ekas/persuratan', 'Persuratan::index');
 // =====================================================================
 foreach ([
     'master/perkiraan',
+    'master/perkiraan-group',
     'master/jabatan',
     'master/tugas-pokok',
     'master/pokok',

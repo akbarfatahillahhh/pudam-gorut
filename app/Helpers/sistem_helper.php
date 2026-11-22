@@ -109,6 +109,7 @@ if (!function_exists('sistem_peta_prefix')) {
 
             // master kas
             'master/perkiraan'               => SISTEM_KAS,
+            'master/perkiraangroup'          => SISTEM_KAS, // autoRoute /Master/PerkiraanGroup/...
             'master/bank'                    => SISTEM_KAS,
             'master/jabatan'                 => SISTEM_KAS,
             'master/tugas-pokok'             => SISTEM_KAS,
@@ -155,6 +156,7 @@ if (!function_exists('sistem_prefix_admin')) {
             // ikut tertutup untuk non-admin.
             'ekas/master',
             'master/perkiraan',
+            'master/perkiraangroup', // autoRoute /Master/PerkiraanGroup/...
             'master/bank',
             'master/jabatan',
             'master/tugas-pokok',
@@ -490,9 +492,10 @@ if (!function_exists('sistem_menu')) {
                         [
                             'label'    => 'Master Keuangan',
                             'icon'     => 'ti ti-wallet',
-                            'prefix'   => 'ekas/master/perkiraan|ekas/master/bank',
+                            'prefix'   => 'ekas/master/perkiraan|ekas/master/perkiraan-group|ekas/master/bank',
                             'children' => [
                                 ['label' => 'Perkiraan', 'url' => 'ekas/master/perkiraan', 'icon' => 'ti ti-report-money', 'prefix' => 'ekas/master/perkiraan'],
+                                ['label' => 'Grup Perkiraan', 'url' => 'ekas/master/perkiraan-group', 'icon' => 'ti ti-stack-2', 'prefix' => 'ekas/master/perkiraan-group'],
                                 // Master Bank disembunyikan: tabel `master_bank`
                                 // belum ada di db_pdam.
                             ],

@@ -16,9 +16,11 @@ use Hermawan\DataTables\DataTable;
  * Tab yang aktif:
  *   - Penagih  : progres penagihan per petugas mobileloket
  *   - BMS      : penagihan lewat Bima Sakti FastPay (users.level='fastpay')
+ *   - PCM      : aktivitas pencatatan meter per petugas (tercatat/terlewati)
  *
- * Tab "LPP Unit" dan "Aktivitas PCM" belum diport; keduanya laporan
- * agregat dari t_tagihan + t_catat_meter yang belum ada padanannya.
+ * Tab "LPP Unit" di aplikasi lama (ss_rekap_lpp_air.php, 830 baris)
+ * belum diport: laporannya matriks lima lapis (unit x jenis pelanggan x
+ * loket x bulan berjalan/tunggakan) yang perlu dipetakan ulang dulu.
  */
 class BillingSystem extends BaseController
 {
@@ -208,6 +210,137 @@ class BillingSystem extends BaseController
             'jumlah' => (int) ($row['jumlah'] ?? 0),
             'total'  => (float) ($row['total'] ?? 0),
         ]);
+    }
+
+    /**
+     * Aktivitas PCM: pelanggan per petugas meter, ditandai sudah atau
+     * belum tercatat pada periode terpilih.
+     *
+     * Padanan control_meter_evaluasi.php + data/ss_evaluasi_pcm.php.
+     * "Tercatat" = ada baris di t_catat_meter ATAU t_tagihan untuk
+     * pelanggan itu pada periode tersebut.
+     */
+    public function pcm()
+    {
+        $bulan    = (int) ($this->request->getVar('bulan') ?? date('n'));
+        $tahun    = (int) ($this->request->getVar('tahun') ?? date('Y'));
+        $idPetugas = (string) ($this->request->getVar('petugas') ?? '');
+        $status   = (string) ($this->request->getVar('status') ?? 'all');
+
+        if ($bulan < 1 || $bulan > 12) {
+            $bulan = (int) date('n');
+        }
+
+        if ($tahun < 2000) {
+            $tahun = (int) date('Y');
+        }
+
+        $builder = $this->db->table('m_pelanggan p')
+            ->select('
+                p.id_pelanggan,
+                p.no_sambungan,
+                p.nama_pelanggan,
+                p.status_aktif,
+                k.kecamatan,
+                kl.kelurahan,
+                j.kd_jenis,
+                c.angka_meter,
+                c.tgl_catat,
+                t.pemakaian_air AS meter_tagihan,
+                t.bulan_tagihan,
+                u.nama_lengkap AS nama_petugas
+            ')
+            ->join('t_kecamatan k', 'k.id_kec = p.id_kec', 'left')
+            ->join('t_kelurahan kl', 'kl.id_kelurahan = p.id_kelurahan', 'left')
+            ->join('m_jenis_pelanggan j', 'j.id_jenis = p.id_jenis', 'left')
+            ->join('users u', "CONVERT(u.id_session USING latin1) COLLATE latin1_swedish_ci = p.petugas_meter", 'left', false)
+            // Satu catatan meter per pelanggan pada periode ini.
+            ->join(
+                '(SELECT id_pelanggan, MAX(angka_meter) AS angka_meter, MAX(tgl_catat) AS tgl_catat
+                  FROM t_catat_meter
+                  WHERE MONTH(tgl_catat) = ' . $bulan . ' AND YEAR(tgl_catat) = ' . $tahun . '
+                  GROUP BY id_pelanggan) c',
+                'c.id_pelanggan = p.id_pelanggan',
+                'left',
+                false
+            )
+            ->join(
+                '(SELECT id_pelanggan, MAX(pemakaian_air) AS pemakaian_air, MAX(bulan_tagihan) AS bulan_tagihan
+                  FROM t_tagihan
+                  WHERE MONTH(bulan_tagihan) = ' . $bulan . ' AND YEAR(bulan_tagihan) = ' . $tahun . '
+                  GROUP BY id_pelanggan) t',
+                't.id_pelanggan = p.id_pelanggan',
+                'left',
+                false
+            )
+            ->where('p.status_aktif', '1');
+
+        if ($idPetugas !== '') {
+            $builder->where('p.petugas_meter', $idPetugas);
+        }
+
+        // Filter status PCM: tercatat = punya catat meter atau rekening;
+        // terlewati = tidak punya keduanya.
+        if ($status === 'N') {
+            $builder->where('c.angka_meter IS NULL', null, false)
+                ->where('t.pemakaian_air IS NULL', null, false);
+        } else {
+            $builder->groupStart()
+                ->where('c.angka_meter IS NOT NULL', null, false)
+                ->orWhere('t.pemakaian_air IS NOT NULL', null, false)
+                ->groupEnd();
+        }
+
+        $builder->orderBy('kl.kelurahan', 'ASC');
+        $builder->orderBy('p.no_sambungan', 'ASC');
+        $builder->orderBy('p.id_pelanggan', 'ASC');
+
+        return DataTable::of($builder)
+            ->add('status_catat', function ($row) {
+                return ($row->angka_meter !== null || $row->meter_tagihan !== null)
+                    ? '<span class="badge bg-success">Tercatat</span>'
+                    : '<span class="badge bg-danger">Terlewati</span>';
+            })
+            ->add('angka_meter', function ($row) {
+                return $row->angka_meter !== null ? (int) $row->angka_meter : (int) $row->meter_tagihan;
+            })
+            ->add('tgl_catat', function ($row) {
+                $tgl = $row->tgl_catat ?? $row->bulan_tagihan;
+
+                return $tgl ? date('d/m/Y', strtotime($tgl)) : '-';
+            })
+            ->toJson(true);
+    }
+
+    /**
+     * Daftar petugas pencatat meter untuk dropdown PCM.
+     */
+    public function petugas_meter()
+    {
+        // m_pelanggan.petugas_meter (latin1_swedish_ci) dan
+        // users.id_session (latin1_general_ci) beda collation, jadi join
+        // langsung ditolak MySQL. Samakan collation saat join.
+        $rows = $this->db->table('m_pelanggan p')
+            ->select('p.petugas_meter, u.nama_lengkap, COUNT(*) AS jumlah')
+            ->join('users u', "CONVERT(u.id_session USING latin1) COLLATE latin1_swedish_ci = p.petugas_meter", 'left', false)
+            ->where('p.status_aktif', '1')
+            ->where('p.petugas_meter IS NOT NULL', null, false)
+            ->where('p.petugas_meter !=', '')
+            ->groupBy('p.petugas_meter, u.nama_lengkap')
+            ->orderBy('jumlah', 'DESC')
+            ->get()
+            ->getResultArray();
+
+        $list = [['id' => '', 'text' => 'SEMUA PETUGAS']];
+
+        foreach ($rows as $row) {
+            $list[] = [
+                'id'   => $row['petugas_meter'],
+                'text' => strtoupper($row['nama_lengkap'] ?? 'TANPA NAMA') . ' (' . $row['jumlah'] . ')',
+            ];
+        }
+
+        return $this->response->setJSON($list);
     }
 
     // =================================================================

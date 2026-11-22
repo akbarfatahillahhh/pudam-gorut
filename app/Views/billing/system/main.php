@@ -32,6 +32,11 @@
                     <i class="ti ti-device-mobile"></i> BMS FastPay
                 </button>
             </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link rounded-0" data-bs-toggle="tab" data-bs-target="#tab-pcm" type="button" id="tabBtnPcm">
+                    <i class="ti ti-checklist"></i> Aktivitas PCM
+                </button>
+            </li>
         </ul>
 
         <div class="tab-content">
@@ -71,6 +76,67 @@
                                 <th width="16%">WILAYAH</th>
                                 <th class="text-center" width="11%">PERIODE</th>
                                 <th class="text-center" width="12%">JUMLAH</th>
+                            </tr>
+                        </thead>
+                        <tbody class="text-black fs-2"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="tab-pane fade" id="tab-pcm" role="tabpanel">
+                <div class="row g-2 mb-2">
+                    <div class="col-lg-2 col-6">
+                        <label class="form-label">Bulan</label>
+                        <select id="pcmBulan" class="form-select form-select-sm">
+                            <?php
+                            $namaBulan = ['', 'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+                                          'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+                            for ($i = 1; $i <= 12; $i++): ?>
+                                <option value="<?= $i ?>" <?= (int) date('n') === $i ? 'selected' : '' ?>><?= $namaBulan[$i] ?></option>
+                            <?php endfor; ?>
+                        </select>
+                    </div>
+                    <div class="col-lg-2 col-6">
+                        <label class="form-label">Tahun</label>
+                        <select id="pcmTahun" class="form-select form-select-sm">
+                            <?php for ($i = (int) date('Y'); $i >= 2021; $i--): ?>
+                                <option value="<?= $i ?>"><?= $i ?></option>
+                            <?php endfor; ?>
+                        </select>
+                    </div>
+                    <div class="col-lg-4 col-6">
+                        <label class="form-label">Petugas Meter</label>
+                        <select id="pcmPetugas" class="form-select form-select-sm">
+                            <option value="">SEMUA PETUGAS</option>
+                        </select>
+                    </div>
+                    <div class="col-lg-2 col-6">
+                        <label class="form-label">Status</label>
+                        <select id="pcmStatus" class="form-select form-select-sm">
+                            <option value="all">Semua</option>
+                            <option value="N">Terlewati</option>
+                        </select>
+                    </div>
+                    <div class="col-lg-2 col-12 d-flex align-items-end">
+                        <button type="button" class="btn btn-sm btn-primary w-100" id="pcmMuat">
+                            <i class="ti ti-refresh"></i> Muat
+                        </button>
+                    </div>
+                </div>
+
+                <div class="table-responsive" style="max-height:55vh;overflow:auto;">
+                    <table id="tablePcm" class="table table-sm table-bordered border-dark align-middle mb-0">
+                        <thead class="text-black fs-2">
+                            <tr>
+                                <th class="text-center" width="4%">#</th>
+                                <th class="text-center" width="11%">SAMBUNGAN</th>
+                                <th>NAMA PELANGGAN</th>
+                                <th width="12%">KECAMATAN</th>
+                                <th width="12%">KELURAHAN</th>
+                                <th class="text-center" width="7%">GOL</th>
+                                <th class="text-center" width="9%">ANGKA METER</th>
+                                <th class="text-center" width="11%">TGL CATAT</th>
+                                <th class="text-center" width="11%">STATUS</th>
                             </tr>
                         </thead>
                         <tbody class="text-black fs-2"></tbody>
@@ -250,6 +316,78 @@
         });
     }
 
+    let tabelPcm = null;
+
+    $.ajax({
+        type: 'get',
+        url: "<?= base_url('Billing/BillingSystem/petugas_meter') ?>",
+        dataType: 'json',
+        success: function(list) {
+            if (!Array.isArray(list)) {
+                return;
+            }
+
+            $.each(list, function(i, item) {
+                $('#pcmPetugas').append('<option value="' + item.id + '">' + item.text + '</option>');
+            });
+
+            $('#pcmPetugas').select2({ width: '100%' });
+        },
+    });
+
+    function muatPcm() {
+        if (tabelPcm) {
+            tabelPcm.destroy();
+        }
+
+        tabelPcm = $('#tablePcm').DataTable({
+            processing: true,
+            serverSide: true,
+            ajax: {
+                type: 'post',
+                url: "<?= base_url('Billing/BillingSystem/pcm') ?>",
+                data: function(d) {
+                    d.bulan = $('#pcmBulan').val();
+                    d.tahun = $('#pcmTahun').val();
+                    d.petugas = $('#pcmPetugas').val();
+                    d.status = $('#pcmStatus').val();
+                },
+            },
+            columns: [
+                { data: null, class: 'text-center align-middle', searchable: false, orderable: false },
+                { data: 'no_sambungan', class: 'text-center align-middle' },
+                { data: 'nama_pelanggan', class: 'align-middle text-uppercase' },
+                { data: 'kecamatan', class: 'align-middle', searchable: false },
+                { data: 'kelurahan', class: 'align-middle', searchable: false },
+                { data: 'kd_jenis', class: 'text-center align-middle', searchable: false },
+                { data: 'angka_meter', class: 'text-center align-middle fw-semibold', searchable: false },
+                { data: 'tgl_catat', class: 'text-center align-middle', searchable: false },
+                { data: 'status_catat', class: 'text-center align-middle', searchable: false },
+            ],
+            order: [[4, 'asc']],
+            pageLength: 25,
+            language: {
+                emptyTable: 'Tidak ada pelanggan pada filter ini.',
+                zeroRecords: 'Tidak ada data.',
+                processing: 'Memuat...',
+                search: 'Cari:',
+                lengthMenu: 'Tampil _MENU_ baris',
+                info: 'Menampilkan _START_ sampai _END_ dari _TOTAL_ pelanggan',
+                infoEmpty: 'Tidak ada data',
+                paginate: { previous: 'Sebelumnya', next: 'Berikutnya' },
+            },
+            drawCallback: function() {
+                const info = this.api().page.info();
+
+                this.api().column(0).nodes().each(function(cell, i) {
+                    cell.innerHTML = info.start + i + 1;
+                });
+            },
+        });
+    }
+
+    $('#pcmMuat').click(muatPcm);
+
     muatPenagih();
     muatBms();
     muatRingkasanBms();
@@ -258,6 +396,18 @@
         muatPenagih();
         muatBms();
         muatRingkasanBms();
+
+        if (tabelPcm) {
+            muatPcm();
+        }
+    });
+
+    $('#tabBtnPcm').on('shown.bs.tab', function() {
+        if (!tabelPcm) {
+            muatPcm();
+        } else {
+            tabelPcm.columns.adjust();
+        }
     });
 
     $('#tabBtnBms').on('shown.bs.tab', function() {

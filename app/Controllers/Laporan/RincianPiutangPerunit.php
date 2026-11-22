@@ -62,7 +62,7 @@ class RincianPiutangPerunit extends BaseController
             $builder->select($subQuery, false);
         }
 
-        $builder->where('id_kec', $unit);
+        $builder->where('t_kelurahan.id_kec', $unit);
 
         return DataTable::of($builder)
             ->toJson(true);
@@ -72,32 +72,42 @@ class RincianPiutangPerunit extends BaseController
    public function datatable()
     {
         $unit = $this->request->getVar('unit');
-        $dateStart = (int) $this->request->getVar('dateStart');
-        $dateEnd = (int) $this->request->getVar('dateEnd');
+        $dateStart = $this->request->getVar('dateStart');
+        $dateEnd = $this->request->getVar('dateEnd');
         $statusLaporan = $this->request->getVar('statusLaporan');
+
+        [$tglAwal, $tglAkhir] = $this->normalisasiPeriode($dateStart, $dateEnd);
+
+        $tahunAwal  = (int) substr($tglAwal, 0, 4);
+        $tahunAkhir = (int) substr($tglAkhir, 0, 4);
+
+        $statusCondition = '';
+        if ($statusLaporan === '0' || $statusLaporan === '1') {
+            $statusCondition = "AND t_tagihan.status = '" . esc($statusLaporan) . "'";
+        }
 
         $builder = $this->db->table('t_kelurahan');
         $builder->select('t_kelurahan.id_kelurahan, t_kelurahan.kelurahan');
 
-        $statusCondition = '';
-        if ($statusLaporan === '0' || $statusLaporan === '1') {
-            $statusCondition = "AND status = '" . esc($statusLaporan) . "'";
-        }
-
         for ($bulan = 1; $bulan <= 12; $bulan++) {
+            // Wilayah lewat m_pelanggan (t_tagihan.id_kelurahan bisa basi),
+            // dan YEAR dibandingkan dengan angka tahun, bukan tanggal.
             $subQuery = "
-                (SELECT SUM(jlh_tagihan) 
-                FROM t_tagihan 
-                WHERE t_tagihan.id_kelurahan = t_kelurahan.id_kelurahan 
-                AND YEAR(bulan_tagihan) BETWEEN {$dateStart} AND {$dateEnd}
-                AND MONTH(bulan_tagihan) = {$bulan}
+                (SELECT IFNULL(SUM(CAST(t_tagihan.jlh_tagihan AS SIGNED)), 0)
+                FROM t_tagihan
+                JOIN m_pelanggan ON m_pelanggan.id_pelanggan = t_tagihan.id_pelanggan
+                WHERE m_pelanggan.id_kelurahan = t_kelurahan.id_kelurahan
+                AND YEAR(t_tagihan.bulan_tagihan) BETWEEN {$tahunAwal} AND {$tahunAkhir}
+                AND MONTH(t_tagihan.bulan_tagihan) = {$bulan}
                 {$statusCondition}
                 ) AS tagihan_bulan_{$bulan}
             ";
             $builder->select($subQuery, false);
         }
 
-        $builder->where('id_kec', $unit);
+        if ($unit !== 'all' && $unit !== '' && $unit !== null) {
+            $builder->where('t_kelurahan.id_kec', (int) $unit);
+        }
 
         return DataTable::of($builder)->toJson(true);
     }
@@ -129,11 +139,45 @@ class RincianPiutangPerunit extends BaseController
             $builder->addBinding([$dateStart, $dateEnd, $bulan], 'select');
         }
 
-        $builder->where('id_kec', $unit);
+        $builder->where('t_kelurahan.id_kec', $unit);
 
         return DataTable::of($builder)->toJson(true);
     }
 
+
+    /**
+     * Terima tahun ('2026') atau tanggal ('2026-10-01'), kembalikan
+     * tanggal penuh + label periode.
+     *
+     * @return array{0:string, 1:string, 2:string}
+     */
+    private function normalisasiPeriode($awal, $akhir): array
+    {
+        $keTanggal = static function ($nilai, bool $akhir): string {
+            $nilai = trim((string) $nilai);
+
+            if (preg_match('/^\d{4}$/', $nilai)) {
+                return $akhir ? $nilai . '-12-31' : $nilai . '-01-01';
+            }
+
+            $ts = strtotime($nilai);
+
+            return $ts === false ? ($akhir ? date('Y-m-d') : date('Y-01-01')) : date('Y-m-d', $ts);
+        };
+
+        $tglAwal  = $keTanggal($awal, false);
+        $tglAkhir = $keTanggal($akhir, true);
+
+        if ($tglAwal > $tglAkhir) {
+            [$tglAwal, $tglAkhir] = [$tglAkhir, $tglAwal];
+        }
+
+        $label = substr($tglAwal, 0, 4) === substr($tglAkhir, 0, 4)
+            ? substr($tglAwal, 0, 4)
+            : substr($tglAwal, 0, 4) . ' - ' . substr($tglAkhir, 0, 4);
+
+        return [$tglAwal, $tglAkhir, $label];
+    }
 
     public function modal_export_pdf()
     {
@@ -149,29 +193,52 @@ class RincianPiutangPerunit extends BaseController
 
     public function export_pdf($dateStart, $dateEnd, $statusLaporan, $unit)
     {
+        // Halaman mengirim TAHUN saja (2026). strtotime('2026') gagal dan
+        // menghasilkan 1970, jadi normalisasi dulu ke tanggal penuh.
+        [$tglAwal, $tglAkhir, $labelPeriode] = $this->normalisasiPeriode($dateStart, $dateEnd);
+
         $html = '<div style="margin-top: 10px;">';
         $html .= "<h3 align='center' style='margin-bottom: 0px; margin-top: 0px;'>LAPORAN REKAPAN REKENING DITAGIH (DRD) AIR</h3>";
-        $html .= "<p align='center' style='margin-bottom: 0px; margin-top: 0px;'><b>PERIODE : " . date('d/m/Y', strtotime($dateStart)) . " - " . date('d/m/Y', strtotime($dateEnd)) . "</b></p>";
+        $html .= "<p align='center' style='margin-bottom: 0px; margin-top: 0px;'><b>PERIODE : " . $labelPeriode . "</b></p>";
 
         $builder = $this->db->table('t_kelurahan');
         $builder->select('t_kelurahan.id_kelurahan, t_kelurahan.kelurahan');
 
-        $additionalCondition = $statusLaporan == 0 ? "AND status = '0'" : ($statusLaporan == 1 ? "AND status = '1'" : '');
+        $additionalCondition = $statusLaporan == 0 ? "AND t_tagihan.status = '0'" : ($statusLaporan == 1 ? "AND t_tagihan.status = '1'" : '');
+
+        // $dateStart/$dateEnd bisa berisi tanggal penuh (2020-01-01).
+        // Membandingkan YEAR(bulan_tagihan) dengan tanggal penuh selalu
+        // false, jadi ambil tahunnya saja.
+        $tahunAwal  = (int) substr($tglAwal, 0, 4);
+        $tahunAkhir = (int) substr($tglAkhir, 0, 4);
+
+        if ($tahunAwal < 2000) {
+            $tahunAwal = 2000;
+        }
+
+        if ($tahunAkhir < $tahunAwal) {
+            $tahunAkhir = $tahunAwal;
+        }
 
         for ($bulan = 1; $bulan <= 12; $bulan++) {
+            // Wilayah lewat m_pelanggan: t_tagihan.id_kelurahan bisa basi
+            // dan id_kec NULL pada 11.474 baris lama.
             $subQuery = "
-                (SELECT SUM(jlh_tagihan) 
-                FROM t_tagihan 
-                WHERE t_tagihan.id_kelurahan = t_kelurahan.id_kelurahan 
-                AND YEAR(bulan_tagihan) BETWEEN '{$dateStart}' AND '{$dateEnd}' 
-                AND MONTH(bulan_tagihan) = {$bulan} 
+                (SELECT IFNULL(SUM(CAST(t_tagihan.jlh_tagihan AS SIGNED)), 0)
+                FROM t_tagihan
+                JOIN m_pelanggan ON m_pelanggan.id_pelanggan = t_tagihan.id_pelanggan
+                WHERE m_pelanggan.id_kelurahan = t_kelurahan.id_kelurahan
+                AND YEAR(t_tagihan.bulan_tagihan) BETWEEN {$tahunAwal} AND {$tahunAkhir}
+                AND MONTH(t_tagihan.bulan_tagihan) = {$bulan}
                 {$additionalCondition}
                 ) as tagihan_bulan_{$bulan}
             ";
             $builder->select($subQuery, false);
         }
 
-        $builder->where('id_kec', $unit);
+        if ($unit !== 'all' && $unit !== '' && $unit !== null) {
+            $builder->where('t_kelurahan.id_kec', (int) $unit);
+        }
         $result = $builder->get()->getResultArray();
 
         $html .= '<br><div class="table"><table>';

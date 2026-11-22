@@ -12,13 +12,14 @@ use App\Controllers\BaseController;
  * untuk satu kelurahan, lengkap dengan harga air, biaya admin, jumlah
  * tagihan, dan pemakaian air.
  *
- * Kubikasi di sini dihitung langsung `pemakaian_air - pemakaian_air_lalu`.
- * Aplikasi lama menurunkan kubikasi secara terbalik dari jumlah tagihan
- * (`(jlh - (tag_bawah + admin)) / tarif_atas + 10`), lalu memakai selisih
- * meter hanya untuk tagihan di bawah tarif atas. Dua cara itu cocok pada
- * 29.459 dari 29.470 baris tahun 2026; selisihnya hanya baris yang di
- * aplikasi lama dipaksa 0. Selisih meter langsung lebih sederhana dan
- * tidak menghasilkan 0 palsu.
+ * Kubikasi memakai aturan yang sama dengan DrdAir::getPemakaian():
+ *   - tag_diatas_10 > 0  -> 10 + tag_diatas_10 / tarif_diatas_10
+ *   - selain itu         -> selisih meter, dibatasi 0..10
+ *
+ * Jangan pakai `pemakaian_air - pemakaian_air_lalu` mentah: 7.914 baris
+ * tahun 2026 punya pemakaian_air_lalu = 0 padahal pemakaian_air-nya
+ * ribuan, sehingga hasilnya meledak. Kedua kolom itu juga varchar, jadi
+ * pengurangan string di PHP 8 melempar TypeError.
  */
 class LppBerjalan extends BaseController
 {
@@ -85,17 +86,15 @@ class LppBerjalan extends BaseController
         ];
 
         foreach ($rows as $i => $r) {
-            $pemakaian = $r['pemakaian_air'] - $r['pemakaian_air_lalu'];
-
             $rows[$i]['no']            = $i + 1;
-            $rows[$i]['harga_air']     = $r['tag_dibawah_10'] + $r['tag_diatas_10'];
-            $rows[$i]['pemakaian']     = max(0, $pemakaian);
+            $rows[$i]['harga_air']     = (float) $r['tag_dibawah_10'] + (float) $r['tag_diatas_10'];
+            $rows[$i]['pemakaian']     = $this->kubikasi($r);
             $rows[$i]['bulan_text']    = $this->namaBulan((int) date('n', strtotime($r['bulan_tagihan'])))
                 . ' ' . date('Y', strtotime($r['bulan_tagihan']));
 
             $total['harga_air']     += $rows[$i]['harga_air'];
-            $total['by_admin']      += $r['by_admin'];
-            $total['jlh_tagihan']   += $r['jlh_tagihan'];
+            $total['by_admin']      += (float) $r['by_admin'];
+            $total['jlh_tagihan']   += (float) $r['jlh_tagihan'];
             $total['pemakaian_air'] += $rows[$i]['pemakaian'];
         }
 
@@ -128,18 +127,29 @@ class LppBerjalan extends BaseController
         $rows = $this->ambilData($tahun, $bulanAwal, $bulanAkhir, $idKelurahan);
 
         $total = ['harga_air' => 0, 'by_admin' => 0, 'jlh_tagihan' => 0, 'pemakaian' => 0];
+        $baris = [];
 
         foreach ($rows as $i => $r) {
-            $rows[$i]['no']         = $i + 1;
-            $rows[$i]['harga_air']  = $r['tag_dibawah_10'] + $r['tag_diatas_10'];
-            $rows[$i]['pemakaian']  = max(0, $r['pemakaian_air'] - $r['pemakaian_air_lalu']);
-            $rows[$i]['bulan_text'] = $this->namaBulan((int) date('n', strtotime($r['bulan_tagihan'])))
-                . ' ' . date('Y', strtotime($r['bulan_tagihan']));
+            $hargaAir  = (float) $r['tag_dibawah_10'] + (float) $r['tag_diatas_10'];
+            $pemakaian = $this->kubikasi($r);
 
-            $total['harga_air']   += $rows[$i]['harga_air'];
-            $total['by_admin']    += $r['by_admin'];
-            $total['jlh_tagihan'] += $r['jlh_tagihan'];
-            $total['pemakaian']   += $rows[$i]['pemakaian'];
+            $baris[] = [
+                'no'         => $i + 1,
+                'sambungan'  => $r['no_sambungan'] ?? '-',
+                'nama'       => $r['nama_pelanggan'] ?? '-',
+                'rek'        => $r['no_rek'] ?? '-',
+                'bulan'      => $this->namaBulan((int) date('n', strtotime($r['bulan_tagihan'])))
+                    . ' ' . date('Y', strtotime($r['bulan_tagihan'])),
+                'harga_air'  => $hargaAir,
+                'by_admin'   => (float) $r['by_admin'],
+                'jlh_tagihan' => (float) $r['jlh_tagihan'],
+                'pemakaian'  => $pemakaian,
+            ];
+
+            $total['harga_air']   += $hargaAir;
+            $total['by_admin']    += (float) $r['by_admin'];
+            $total['jlh_tagihan'] += (float) $r['jlh_tagihan'];
+            $total['pemakaian']   += $pemakaian;
         }
 
         $kelurahan = $this->db->table('t_kelurahan k')
@@ -148,16 +158,6 @@ class LppBerjalan extends BaseController
             ->where('k.id_kelurahan', $idKelurahan)
             ->get()
             ->getRowArray();
-
-        $html = view('laporan/lpp_berjalan/pdf', [
-            'rows'      => $rows,
-            'total'     => $total,
-            'kelurahan' => $kelurahan,
-            'tahun'     => $tahun,
-            'periode'   => $this->namaBulan($bulanAwal) . ' S/D ' . $this->namaBulan($bulanAkhir) . ' ' . $tahun,
-        ]);
-
-        $page = view('pdf/potrait', ['html' => $html]);
 
         $mpdf = new \Mpdf\Mpdf([
             'mode'              => 'utf-8',
@@ -168,7 +168,32 @@ class LppBerjalan extends BaseController
             'tempDir'           => WRITEPATH . 'mpdf_temp',
         ]);
 
-        $mpdf->WriteHTML($page);
+        // Kop ditulis sekali, baris menyusul per potongan: satu
+        // WriteHTML dengan 2.500+ baris melewati pcre.backtrack_limit.
+        $mpdf->WriteHTML(view('laporan/lpp_berjalan/pdf', [
+            'baris_awal' => true,
+            'baris'      => [],
+            'total'      => $total,
+            'kelurahan'  => $kelurahan,
+            'tahun'      => $tahun,
+            'periode'    => $this->namaBulan($bulanAwal) . ' S/D ' . $this->namaBulan($bulanAkhir) . ' ' . $tahun,
+        ]));
+
+        $potongan = array_chunk($baris, 200);
+        $akhir    = count($potongan) - 1;
+
+        foreach ($potongan as $i => $chunk) {
+            $mpdf->WriteHTML(view('laporan/lpp_berjalan/pdf', [
+                'baris_awal'  => false,
+                'baris'       => $chunk,
+                'total'       => $total,
+                'kelurahan'   => $kelurahan,
+                'tahun'       => $tahun,
+                'periode'     => '',
+                'baris_total' => $i === $akhir,
+            ]));
+        }
+
         $mpdf->SetTitle('LPP AIR PERIODIK');
 
         return $this->response
@@ -246,6 +271,23 @@ class LppBerjalan extends BaseController
             ->orderBy('p.no_sambungan', 'ASC')
             ->get()
             ->getResultArray();
+    }
+
+    /**
+     * Kubikasi satu baris. Lihat penjelasan di docblock kelas.
+     */
+    private function kubikasi(array $r): int
+    {
+        $tarifAtas = (float) ($r['tarif_diatas_10'] ?? 0);
+        $tagAtas   = (float) ($r['tag_diatas_10'] ?? 0);
+
+        if ($tarifAtas > 0 && $tagAtas > 0) {
+            return (int) round(10 + $tagAtas / $tarifAtas);
+        }
+
+        $selisih = (float) ($r['pemakaian_air'] ?? 0) - (float) ($r['pemakaian_air_lalu'] ?? 0);
+
+        return (int) max(0, min(10, $selisih));
     }
 
     private function namaBulan(int $bulan): string

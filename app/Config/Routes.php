@@ -38,6 +38,9 @@ $routes->get('/billing/loket/kwitansi_pdf/(:segment)', 'Billing\Loket::kwitansi_
 $routes->get('/billing/tagihan', 'Billing\Tagihan::index');
 $routes->get('/billing/tagihan/duplikat', 'Billing\Tagihan::duplikat');
 
+// catat meter: verifikasi hasil pencatatan petugas
+$routes->get('/billing/catat-meter', 'Billing\CatatMeter::index');
+
 // master billing
 $routes->get('/billing/master/set-kelompok-tarif', 'Master\SetKelompokTarif::index');
 $routes->get('/billing/master/set-jenis-pelanggan', 'Master\SetJenisPelanggan::index');

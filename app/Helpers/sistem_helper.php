@@ -77,6 +77,7 @@ if (!function_exists('sistem_peta_prefix')) {
             'pelanggan'                      => SISTEM_BILLING,
             'billing/loket'                  => SISTEM_BILLING,
             'billing/tagihan'                => SISTEM_BILLING,
+            'billing/catat-meter'            => SISTEM_BILLING,
             'tagihan'                        => SISTEM_BILLING, // halaman lama + autoRoute /Billing/Tagihan/...
 
             // master billing
@@ -157,6 +158,7 @@ if (!function_exists('sistem_prefix_admin')) {
             // tetap tertutup untuk non-admin).
             'billing/master',
             'billing/tagihan', // terbit rekening & cek no rek: kantor/admin
+            'billing/catat-meter', // verifikasi = terbit rekening, ikut admin
             'master/pelanggan',
             'master/pasang-meter',
             'master/set-kelompok-tarif',
@@ -563,6 +565,7 @@ if (!function_exists('sistem_menu')) {
                 'admin' => true,
                 'items' => [
                     ['label' => 'Tagihan', 'url' => 'billing/tagihan', 'icon' => 'ti ti-file-invoice', 'id' => 'tagihan_menu', 'prefix' => 'billing/tagihan'],
+                    ['label' => 'Catat Meter', 'url' => 'billing/catat-meter', 'icon' => 'ti ti-gauge', 'id' => 'catat_meter_menu', 'prefix' => 'billing/catat-meter'],
                     ['label' => 'Cek No. Rekening', 'url' => 'billing/tagihan/duplikat', 'icon' => 'ti ti-receipt-2', 'prefix' => 'billing/tagihan/duplikat'],
                 ],
             ],

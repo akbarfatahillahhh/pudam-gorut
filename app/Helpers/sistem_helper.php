@@ -76,6 +76,8 @@ if (!function_exists('sistem_peta_prefix')) {
             'home/billing'                   => SISTEM_BILLING,
             'pelanggan'                      => SISTEM_BILLING,
             'billing/loket'                  => SISTEM_BILLING,
+            'billing/tagihan'                => SISTEM_BILLING,
+            'tagihan'                        => SISTEM_BILLING, // halaman lama + autoRoute /Billing/Tagihan/...
 
             // master billing
             'master/pelanggan'               => SISTEM_BILLING,
@@ -151,6 +153,7 @@ if (!function_exists('sistem_prefix_admin')) {
             // didaftarkan supaya bookmark lama yang belum ter-redirect
             // tetap tertutup untuk non-admin).
             'billing/master',
+            'billing/tagihan', // terbit rekening & cek no rek: kantor/admin
             'master/pelanggan',
             'master/pasang-meter',
             'master/set-kelompok-tarif',
@@ -548,6 +551,16 @@ if (!function_exists('sistem_menu')) {
                 'items' => [
                     ['label' => 'Pelanggan', 'url' => 'billing/pelanggan', 'icon' => 'ti ti-users', 'id' => 'pelanggan_menu', 'prefix' => 'billing/pelanggan'],
                     ['label' => 'Loket Pembayaran', 'url' => 'billing/loket', 'icon' => 'ti ti-cash-banknote', 'id' => 'loket_menu', 'prefix' => 'billing/loket'],
+                ],
+            ],
+            [
+                // Terbit rekening = tugas kantor, sejalan dengan bs yang
+                // hanya menaruhnya di menu super admin / kantor.
+                'judul' => 'Tagihan (Kantor)',
+                'admin' => true,
+                'items' => [
+                    ['label' => 'Tagihan', 'url' => 'billing/tagihan', 'icon' => 'ti ti-file-invoice', 'id' => 'tagihan_menu', 'prefix' => 'billing/tagihan'],
+                    ['label' => 'Cek No. Rekening', 'url' => 'billing/tagihan/duplikat', 'icon' => 'ti ti-receipt-2', 'prefix' => 'billing/tagihan/duplikat'],
                 ],
             ],
             [

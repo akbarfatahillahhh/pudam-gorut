@@ -34,6 +34,10 @@ $routes->get('/billing/pelanggan', 'Pelanggan::index');
 $routes->get('/billing/loket', 'Billing\Loket::index');
 $routes->get('/billing/loket/kwitansi_pdf/(:segment)', 'Billing\Loket::kwitansi_pdf/$1');
 
+// tagihan: entry pemakaian, pembayaran massal, cetak, cek duplikat
+$routes->get('/billing/tagihan', 'Billing\Tagihan::index');
+$routes->get('/billing/tagihan/duplikat', 'Billing\Tagihan::duplikat');
+
 // master billing
 $routes->get('/billing/master/set-kelompok-tarif', 'Master\SetKelompokTarif::index');
 $routes->get('/billing/master/set-jenis-pelanggan', 'Master\SetJenisPelanggan::index');
@@ -60,6 +64,8 @@ $routes->get('/billing/laporan/rekapitulasi-piutang', 'Laporan\RekapitulasiPiuta
 // =====================================================================
 foreach ([
     'pelanggan',
+    'tagihan',
+    'tagihan/duplikat',
     'master/set-kelompok-tarif',
     'master/set-jenis-pelanggan',
     'master/pelanggan',

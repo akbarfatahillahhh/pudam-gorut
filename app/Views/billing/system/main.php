@@ -37,6 +37,11 @@
                     <i class="ti ti-checklist"></i> Aktivitas PCM
                 </button>
             </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link rounded-0" data-bs-toggle="tab" data-bs-target="#tab-lppunit" type="button" id="tabBtnLppUnit">
+                    <i class="ti ti-report"></i> LPP Unit
+                </button>
+            </li>
         </ul>
 
         <div class="tab-content">
@@ -137,6 +142,76 @@
                                 <th class="text-center" width="9%">ANGKA METER</th>
                                 <th class="text-center" width="11%">TGL CATAT</th>
                                 <th class="text-center" width="11%">STATUS</th>
+                            </tr>
+                        </thead>
+                        <tbody class="text-black fs-2"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="tab-pane fade" id="tab-lppunit" role="tabpanel">
+                <div class="row g-2 mb-2">
+                    <div class="col-lg-2 col-6">
+                        <label class="form-label">Bulan</label>
+                        <select id="lppuBulan" class="form-select form-select-sm">
+                            <?php
+                            $namaBulan = ['', 'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+                                          'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+                            for ($i = 1; $i <= 12; $i++): ?>
+                                <option value="<?= $i ?>" <?= (int) date('n') === $i ? 'selected' : '' ?>><?= $namaBulan[$i] ?></option>
+                            <?php endfor; ?>
+                        </select>
+                    </div>
+                    <div class="col-lg-2 col-6">
+                        <label class="form-label">Tahun</label>
+                        <select id="lppuTahun" class="form-select form-select-sm">
+                            <?php for ($i = (int) date('Y'); $i >= 2009; $i--): ?>
+                                <option value="<?= $i ?>"><?= $i ?></option>
+                            <?php endfor; ?>
+                        </select>
+                    </div>
+                    <div class="col-lg-3 col-6">
+                        <label class="form-label">Unit</label>
+                        <select id="lppuUnit" class="form-select form-select-sm">
+                            <option value="0">[ Semua Unit ]</option>
+                        </select>
+                    </div>
+                    <div class="col-lg-2 col-6">
+                        <label class="form-label">Loket</label>
+                        <select id="lppuLoket" class="form-select form-select-sm">
+                            <option value="all">Semua</option>
+                            <option value="kantor">Kantor</option>
+                            <option value="mobile">Mobile</option>
+                        </select>
+                    </div>
+                    <div class="col-lg-1 col-6 d-flex align-items-end">
+                        <button type="button" class="btn btn-sm btn-primary w-100" id="lppuMuat">
+                            <i class="ti ti-refresh"></i>
+                        </button>
+                    </div>
+                    <div class="col-lg-2 col-12 d-flex align-items-end">
+                        <button type="button" class="btn btn-sm btn-danger w-100" id="lppuPdf">
+                            <i class="fa fa-file-pdf"></i> PDF
+                        </button>
+                    </div>
+                </div>
+
+                <div class="border rounded bg-light px-3 py-2 mb-2 fs-2 d-flex justify-content-between">
+                    <span id="lppuInfo">-</span>
+                    <b id="lppuTotal">Rp 0</b>
+                </div>
+
+                <div class="table-responsive" style="max-height:52vh;overflow:auto;">
+                    <table id="tableLppUnit" class="table table-sm table-bordered border-dark align-middle mb-0">
+                        <thead class="text-black fs-2">
+                            <tr>
+                                <th class="text-center" width="4%">#</th>
+                                <th width="22%">UNIT</th>
+                                <th>KELOMPOK JASA</th>
+                                <th class="text-center" width="10%">REKENING</th>
+                                <th class="text-center" width="15%">HARGA AIR</th>
+                                <th class="text-center" width="13%">BIAYA ADM</th>
+                                <th class="text-center" width="15%">JUMLAH</th>
                             </tr>
                         </thead>
                         <tbody class="text-black fs-2"></tbody>
@@ -387,6 +462,120 @@
     }
 
     $('#pcmMuat').click(muatPcm);
+
+    // ---- LPP Unit ----
+    let tabelLppUnit = null;
+
+    $.ajax({
+        type: 'get',
+        url: "<?= base_url('Billing/BillingSystem/unit_lpp') ?>",
+        dataType: 'json',
+        success: function(list) {
+            if (!Array.isArray(list)) {
+                return;
+            }
+
+            $.each(list, function(i, item) {
+                $('#lppuUnit').append('<option value="' + item.id + '">' + item.text + '</option>');
+            });
+
+            $('#lppuUnit').select2({ width: '100%' });
+        },
+    });
+
+    function filterLppUnit() {
+        return {
+            bulan: $('#lppuBulan').val(),
+            tahun: $('#lppuTahun').val(),
+            unit: $('#lppuUnit').val(),
+            loket: $('#lppuLoket').val(),
+        };
+    }
+
+    function muatLppUnit() {
+        if (tabelLppUnit) {
+            tabelLppUnit.destroy();
+        }
+
+        tabelLppUnit = $('#tableLppUnit').DataTable({
+            processing: true,
+            serverSide: true,
+            ajax: {
+                type: 'post',
+                url: "<?= base_url('Billing/BillingSystem/lpp_unit') ?>",
+                data: function(d) {
+                    Object.assign(d, filterLppUnit());
+                },
+            },
+            columns: [
+                { data: null, class: 'text-center align-middle', searchable: false, orderable: false },
+                { data: 'kecamatan', class: 'align-middle' },
+                { data: 'kelompok_jasa', class: 'align-middle' },
+                { data: 'rekening', class: 'text-center align-middle', searchable: false },
+                { data: 'harga_air', class: 'text-end align-middle', searchable: false, render: rupiah },
+                { data: 'by_admin', class: 'text-end align-middle', searchable: false, render: rupiah },
+                { data: 'jumlah', class: 'text-end align-middle fw-semibold', searchable: false, render: rupiah },
+            ],
+            order: [[1, 'asc'], [2, 'asc']],
+            pageLength: 25,
+            language: {
+                emptyTable: 'Tidak ada data pada filter ini.',
+                zeroRecords: 'Tidak ada data.',
+                processing: 'Memuat...',
+                search: 'Cari:',
+                lengthMenu: 'Tampil _MENU_ baris',
+                info: 'Menampilkan _START_ sampai _END_ dari _TOTAL_ baris',
+                infoEmpty: 'Tidak ada data',
+                paginate: { previous: 'Sebelumnya', next: 'Berikutnya' },
+            },
+            drawCallback: function() {
+                const info = this.api().page.info();
+
+                this.api().column(0).nodes().each(function(cell, i) {
+                    cell.innerHTML = info.start + i + 1;
+                });
+            },
+        });
+
+        $.ajax({
+            type: 'get',
+            url: "<?= base_url('Billing/BillingSystem/lpp_unit_ringkasan') ?>",
+            data: filterLppUnit(),
+            dataType: 'json',
+            success: function(res) {
+                if (res.status !== 'success') {
+                    return;
+                }
+
+                $('#lppuInfo').text(
+                    Number(res.rekening).toLocaleString('id-ID') + ' rekening · ' +
+                    rupiah(res.by_admin) + ' biaya admin'
+                );
+                $('#lppuTotal').text(rupiah(res.jumlah));
+            },
+        });
+    }
+
+    $('#lppuMuat').click(muatLppUnit);
+
+    $('#lppuPdf').click(function() {
+        const f = filterLppUnit();
+
+        window.open(
+            "<?= base_url('Billing/BillingSystem/export_lpp_unit_pdf') ?>" +
+            '?bulan=' + f.bulan + '&tahun=' + f.tahun +
+            '&unit=' + f.unit + '&loket=' + f.loket,
+            '_blank'
+        );
+    });
+
+    $('#tabBtnLppUnit').on('shown.bs.tab', function() {
+        if (!tabelLppUnit) {
+            muatLppUnit();
+        } else {
+            tabelLppUnit.columns.adjust();
+        }
+    });
 
     muatPenagih();
     muatBms();

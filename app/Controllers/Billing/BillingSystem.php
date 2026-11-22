@@ -343,6 +343,257 @@ class BillingSystem extends BaseController
         return $this->response->setJSON($list);
     }
 
+    /**
+     * LPP Unit (ringkas): total penagihan per unit x kelompok jasa.
+     *
+     * Padanan ss_rekap_lpp_air.php, tapi versi ringkas sesuai keputusan:
+     * hanya total per unit x kelompok jasa untuk satu periode. Matriks
+     * lima lapis versi lama (unit x jenis pelanggan x loket x bulan
+     * berjalan/tunggakan x kelurahan) tidak dipertahankan.
+     *
+     * Parameter:
+     *   bulan     - bulan tagihan yang direkap
+     *   tahun     - tahun tagihan
+     *   unit      - id_kec, 0 = semua unit
+     *   loket     - 'all' | 'kantor' | 'mobile' (level pelunasan)
+     */
+    public function lpp_unit()
+    {
+        $f = $this->filterLppUnit();
+
+        $builder = $this->lppUnitBuilder($f)
+            ->select('
+                k.kecamatan,
+                j.kelompok_jasa,
+                COUNT(t.id_pemakaian) AS rekening,
+                SUM(t.tag_dibawah_10 + t.tag_diatas_10) AS harga_air,
+                SUM(t.by_admin) AS by_admin,
+                SUM(t.jlh_tagihan) AS jumlah
+            ')
+            ->groupBy('k.kecamatan, j.kelompok_jasa')
+            ->orderBy('k.kecamatan', 'ASC')
+            ->orderBy('j.kelompok_jasa', 'ASC');
+
+        return DataTable::of($builder)
+            ->add('rekening', function ($row) {
+                return (int) $row->rekening;
+            })
+            ->add('harga_air', function ($row) {
+                return (float) $row->harga_air;
+            })
+            ->add('by_admin', function ($row) {
+                return (float) $row->by_admin;
+            })
+            ->add('jumlah', function ($row) {
+                return (float) $row->jumlah;
+            })
+            ->toJson(true);
+    }
+
+    /**
+     * Ringkasan LPP Unit: total keseluruhan untuk periode aktif.
+     */
+    public function lpp_unit_ringkasan()
+    {
+        $f = [
+            'bulan' => (int) ($this->request->getVar('bulan') ?? date('n')),
+            'tahun' => (int) ($this->request->getVar('tahun') ?? date('Y')),
+            'unit'  => (int) ($this->request->getVar('unit') ?? 0),
+            'loket' => (string) ($this->request->getVar('loket') ?? 'all'),
+        ];
+
+        if ($f['bulan'] < 1 || $f['bulan'] > 12) {
+            $f['bulan'] = (int) date('n');
+        }
+
+        if ($f['tahun'] < 2000) {
+            $f['tahun'] = (int) date('Y');
+        }
+
+        $row = $this->lppUnitBuilder($f)
+            ->select('
+                COUNT(t.id_pemakaian) AS rekening,
+                SUM(t.tag_dibawah_10 + t.tag_diatas_10) AS harga_air,
+                SUM(t.by_admin) AS by_admin,
+                SUM(t.jlh_tagihan) AS jumlah
+            ')
+            ->get()
+            ->getRowArray();
+
+        return $this->response->setJSON([
+            'status'    => 'success',
+            'rekening'  => (int) ($row['rekening'] ?? 0),
+            'harga_air' => (float) ($row['harga_air'] ?? 0),
+            'by_admin'  => (float) ($row['by_admin'] ?? 0),
+            'jumlah'    => (float) ($row['jumlah'] ?? 0),
+        ]);
+    }
+
+    public function export_lpp_unit_pdf()
+    {
+        $f = [
+            'bulan' => (int) ($this->request->getVar('bulan') ?? date('n')),
+            'tahun' => (int) ($this->request->getVar('tahun') ?? date('Y')),
+            'unit'  => (int) ($this->request->getVar('unit') ?? 0),
+            'loket' => (string) ($this->request->getVar('loket') ?? 'all'),
+        ];
+
+        if ($f['bulan'] < 1 || $f['bulan'] > 12) {
+            $f['bulan'] = (int) date('n');
+        }
+
+        if ($f['tahun'] < 2000) {
+            $f['tahun'] = (int) date('Y');
+        }
+
+        $rows = $this->lppUnitBuilder($f)
+            ->select('
+                k.kecamatan,
+                j.kelompok_jasa,
+                COUNT(t.id_pemakaian) AS rekening,
+                SUM(t.tag_dibawah_10 + t.tag_diatas_10) AS harga_air,
+                SUM(t.by_admin) AS by_admin,
+                SUM(t.jlh_tagihan) AS jumlah
+            ')
+            ->groupBy('k.kecamatan, j.kelompok_jasa')
+            ->orderBy('k.kecamatan', 'ASC')
+            ->orderBy('j.kelompok_jasa', 'ASC')
+            ->get()
+            ->getResultArray();
+
+        $total = ['rekening' => 0, 'harga_air' => 0, 'by_admin' => 0, 'jumlah' => 0];
+        $baris = [];
+
+        foreach ($rows as $r) {
+            $harga = (float) $r['harga_air'];
+
+            $baris[] = [
+                'unit'      => $r['kecamatan'] ?? '-',
+                'kelompok'  => $r['kelompok_jasa'] ?? '-',
+                'rekening'  => (int) $r['rekening'],
+                'harga_air' => $harga,
+                'by_admin'  => (float) $r['by_admin'],
+                'jumlah'    => (float) $r['jumlah'],
+            ];
+
+            $total['rekening']  += (int) $r['rekening'];
+            $total['harga_air'] += $harga;
+            $total['by_admin']  += (float) $r['by_admin'];
+            $total['jumlah']    += (float) $r['jumlah'];
+        }
+
+        $namaBulan = ['', 'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+                      'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+
+        $html = view('billing/system/pdf/lpp_unit', [
+            'baris'   => $baris,
+            'total'   => $total,
+            'periode' => $namaBulan[$f['bulan']] . ' ' . $f['tahun'],
+            'loket'   => ['all' => 'SEMUA LOKET', 'kantor' => 'KANTOR', 'mobile' => 'MOBILE'][$f['loket']] ?? 'SEMUA LOKET',
+            'unit'    => $f['unit'] > 0
+                ? strtoupper((string) ($this->db->table('t_kecamatan')->select('kecamatan')->where('id_kec', $f['unit'])->get()->getRowArray()['kecamatan'] ?? '-'))
+                : 'SEMUA UNIT',
+        ]);
+
+        $mpdf = new \Mpdf\Mpdf([
+            'mode'              => 'utf-8',
+            'format'            => 'A4',
+            'orientation'       => 'L',
+            'default_font_size' => 9,
+            'default_font'      => 'arial',
+            'tempDir'           => WRITEPATH . 'mpdf_temp',
+        ]);
+
+        $mpdf->WriteHTML(view('pdf/potrait', ['html' => $html]));
+        $mpdf->SetTitle('LPP UNIT');
+
+        return $this->response
+            ->setHeader('Content-Type', 'application/pdf')
+            ->setBody($mpdf->Output('', 'S'));
+    }
+
+    /**
+     * Daftar unit (kecamatan) untuk filter LPP Unit.
+     */
+    public function unit_lpp()
+    {
+        $rows = $this->db->table('t_kecamatan')
+            ->select('id_kec, kecamatan')
+            ->orderBy('kecamatan', 'ASC')
+            ->get()
+            ->getResultArray();
+
+        $list = [['id' => 0, 'text' => '[ Semua Unit ]']];
+
+        foreach ($rows as $row) {
+            $list[] = ['id' => $row['id_kec'], 'text' => $row['kecamatan']];
+        }
+
+        return $this->response->setJSON($list);
+    }
+
+    /**
+     * Normalisasi parameter filter LPP Unit.
+     *
+     * @return array{bulan:int, tahun:int, unit:int, loket:string}
+     */
+    private function filterLppUnit(): array
+    {
+        $f = [
+            'bulan' => (int) ($this->request->getVar('bulan') ?? date('n')),
+            'tahun' => (int) ($this->request->getVar('tahun') ?? date('Y')),
+            'unit'  => (int) ($this->request->getVar('unit') ?? 0),
+            'loket' => (string) ($this->request->getVar('loket') ?? 'all'),
+        ];
+
+        if ($f['bulan'] < 1 || $f['bulan'] > 12) {
+            $f['bulan'] = (int) date('n');
+        }
+
+        if ($f['tahun'] < 2000) {
+            $f['tahun'] = (int) date('Y');
+        }
+
+        if (! in_array($f['loket'], ['all', 'kantor', 'mobile'], true)) {
+            $f['loket'] = 'all';
+        }
+
+        return $f;
+    }
+
+    /**
+     * Builder dasar LPP Unit; dipakai tabel, ringkasan, dan PDF.
+     */
+    private function lppUnitBuilder(array $f)
+    {
+        $builder = $this->db->table('t_tagihan t')
+            ->join('m_pelanggan p', 'p.id_pelanggan = t.id_pelanggan')
+            ->join('m_jasa j', 'j.id_jasa = t.id_jasa', 'left')
+            ->join('t_kecamatan k', 'k.id_kec = p.id_kec', 'left')
+            ->where('t.status', '1')
+            ->where('MONTH(t.bulan_tagihan)', $f['bulan'], false)
+            ->where('YEAR(t.bulan_tagihan)', $f['tahun'], false);
+
+        if ($f['unit'] > 0) {
+            $builder->where('p.id_kec', $f['unit']);
+        }
+
+        // Loket: level user yang melunasi. Join HARUS sebelum whereIn
+        // pada u.level. Collation users.id_session beda dengan kolom
+        // teks lain, jadi disamakan saat join.
+        if ($f['loket'] === 'kantor' || $f['loket'] === 'mobile') {
+            $builder->join('users u', 'u.id_session = t.id_user', 'inner');
+
+            if ($f['loket'] === 'kantor') {
+                $builder->whereIn('u.level', ['loket', 'admin']);
+            } else {
+                $builder->whereIn('u.level', ['mobileloket', 'fastpay']);
+            }
+        }
+
+        return $builder;
+    }
+
     // =================================================================
     // BANTUAN
     // =================================================================

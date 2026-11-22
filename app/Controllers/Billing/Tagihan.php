@@ -501,7 +501,112 @@ class Tagihan extends BaseController
 
         return $this->response->setJSON([
             'status' => 'success',
-            'html'   => view('billing/tagihan/modal/duplikat', ['rows' => $rows, 'no_rek' => $noRek]),
+            'html'   => view('billing/tagihan/modal/duplikat', [
+                'rows'   => $rows,
+                'no_rek' => $noRek,
+                'bulan'  => $bulan,
+                'tahun'  => $tahun,
+            ]),
+        ]);
+    }
+
+    /**
+     * Beri nomor rekening baru untuk baris yang bentrok.
+     *
+     * Satu baris dipertahankan (default: id_pemakaian terendah, atau yang
+     * dipilih lewat `pertahankan`), sisanya dinomori ulang mulai dari
+     * MAX(no_rek) periode itu. Dijalankan dalam satu transaksi.
+     *
+     * Aplikasi lama punya tombol ini juga, tapi aksi_perbaiki_norek.php
+     * seluruh badan loop-nya dikomentari — tombolnya tidak pernah
+     * mengubah apa pun.
+     */
+    public function perbaiki_norek()
+    {
+        if (session('level') !== 'admin') {
+            return $this->response->setStatusCode(403)->setJSON([
+                'status' => 'error',
+                'msg'    => 'Hanya admin yang boleh memperbaiki nomor rekening.',
+            ]);
+        }
+
+        $noRek       = (string) $this->request->getVar('no_rek');
+        $bulan       = (int) $this->request->getVar('bulan');
+        $tahun       = (int) $this->request->getVar('tahun');
+        $pertahankan = (int) $this->request->getVar('pertahankan');
+
+        if ($noRek === '' || $bulan < 1 || $bulan > 12 || $tahun < 2000) {
+            return $this->response->setJSON([
+                'status' => 'error',
+                'msg'    => 'Parameter periode tidak lengkap.',
+            ]);
+        }
+
+        $rows = $this->db->table('t_tagihan')
+            ->select('id_pemakaian')
+            ->where('no_rek', $noRek)
+            ->where('MONTH(bulan_tagihan)', $bulan, false)
+            ->where('YEAR(bulan_tagihan)', $tahun, false)
+            ->orderBy('id_pemakaian', 'ASC')
+            ->get()
+            ->getResultArray();
+
+        if (count($rows) < 2) {
+            return $this->response->setJSON([
+                'status' => 'error',
+                'msg'    => 'Tidak ada duplikat pada nomor rekening ini.',
+            ]);
+        }
+
+        // Baris yang nomornya dipertahankan.
+        $idSimpan = $pertahankan;
+
+        if ($idSimpan <= 0 || ! in_array($idSimpan, array_column($rows, 'id_pemakaian'), false)) {
+            $idSimpan = (int) $rows[0]['id_pemakaian'];
+        }
+
+        $idUbah = array_values(array_filter(
+            array_map('intval', array_column($rows, 'id_pemakaian')),
+            static fn ($id) => $id !== $idSimpan
+        ));
+
+        $terakhirRow = $this->db->table('t_tagihan')
+            ->select('MAX(CAST(no_rek AS UNSIGNED)) AS terakhir', false)
+            ->where('MONTH(bulan_tagihan)', $bulan, false)
+            ->where('YEAR(bulan_tagihan)', $tahun, false)
+            ->get()
+            ->getRowArray();
+
+        $nomorBerikut = (int) ($terakhirRow['terakhir'] ?? 0);
+
+        $this->db->transStart();
+
+        $nomorBaru = [];
+
+        foreach ($idUbah as $id) {
+            $nomorBerikut++;
+            $nomor = str_pad((string) $nomorBerikut, 4, '0', STR_PAD_LEFT);
+            $nomorBaru[] = $nomor;
+
+            $this->db->table('t_tagihan')
+                ->where('id_pemakaian', $id)
+                ->update(['no_rek' => $nomor]);
+        }
+
+        $this->db->transComplete();
+
+        if ($this->db->transStatus() === false) {
+            return $this->response->setJSON([
+                'status' => 'error',
+                'msg'    => 'Perbaikan gagal, tidak ada nomor yang berubah.',
+            ]);
+        }
+
+        return $this->response->setJSON([
+            'status'      => 'success',
+            'msg'         => count($nomorBaru) . ' rekening diberi nomor baru.',
+            'dipertahankan' => $noRek,
+            'nomor_baru'  => $nomorBaru,
         ]);
     }
 

@@ -43,6 +43,7 @@
                     data.dateStart = $('#dateStart').val();
                     data.dateEnd = $('#dateEnd').val();
                     data.statusLaporan = $('#statusLaporan').val();
+                    data.pelanggan = $('#pelanggan').val();
                     data.unit = $('.filter-per-unit #unit').val();
                 }
             },

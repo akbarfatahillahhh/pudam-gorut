@@ -7,7 +7,7 @@
             </div>
             <div class="modal-body">
                 <div class="h-100 w-100">
-                    <iframe src="<?= base_url('Laporan/DrdAir/export_pdf') ?>/<?= $jenisLaporan ?>/<?= $dateStart ?>/<?= $dateEnd ?>/<?= $statusLaporan ?>/<?= $petugas ?>/<?= $unit ?>/<?= $kel ?>" class="h-100 w-100"></iframe>
+                    <iframe src="<?= base_url('Laporan/DrdAir/export_pdf') ?>/<?= $params ?>" class="h-100 w-100"></iframe>
                 </div>
             </div>
         </div>

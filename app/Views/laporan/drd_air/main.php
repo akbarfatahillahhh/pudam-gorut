@@ -34,6 +34,14 @@
                         <option value="1">Sudah Bayar</option>
                     </select>
                 </div>
+                <div class="col-lg-3 mb-2">
+                    <label for="" class="form-label fw-semibold">Status Pelanggan</label>
+                    <select name="" id="pelanggan" class="form-select">
+                        <option value="all" selected>Semua Pelanggan</option>
+                        <option value="aktif">Pelanggan Aktif</option>
+                        <option value="nonaktif">Pelanggan Tidak Aktif</option>
+                    </select>
+                </div>
                 <div class="col-lg-3 mb-2 filter-per-petugas">
                     <label for="" class="form-label fw-semibold">Petugas</label>
                     <select name="" id="petugas" class="form-select">
@@ -128,6 +136,7 @@
                 dateEnd: dateEnd,
                 jenisLaporan: jenisLaporan,
                 statusLaporan: statusLaporan,
+                pelanggan: $('#pelanggan').val(),
                 petugas: petugas,
                 unit: unit,
                 kel: kel

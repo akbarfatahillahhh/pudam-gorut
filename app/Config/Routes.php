@@ -188,6 +188,7 @@ foreach ([
 // ADMIN (berlaku di kedua sistem)
 // =====================================================================
 $routes->get('/master/akun', 'Master\Akun::index');
+$routes->get('/master/akses', 'Master\AksesModul::index');
 
 $routes->get('/isSession', function () {
     $response = service('response');

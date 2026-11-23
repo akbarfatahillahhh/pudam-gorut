@@ -47,11 +47,7 @@ class Home extends BaseController
 
         $menu = [];
 
-        foreach (sistem_menu($sistem) as $grup) {
-            if (!empty($grup['admin']) && session('level') !== 'admin') {
-                continue;
-            }
-
+        foreach (sistem_menu_terlihat($sistem) as $grup) {
             foreach ($grup['items'] as $item) {
                 $menu[] = $item;
 

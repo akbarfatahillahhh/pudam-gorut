@@ -29,10 +29,27 @@ class FilterSistem implements FilterInterface
         $sistem = sistem_dari_path($path);
 
         if (!sistem_boleh_path($path)) {
-            // Tidak berhak: lempar ke dashboard sistem yang sedang dipakai.
             session()->setFlashdata('error', 'Anda tidak punya akses ke modul tersebut.');
 
-            return redirect()->to(sistem_home_url(sistem_aktif()));
+            // Tujuan redirect harus sistem yang memang boleh dibuka user.
+            // Kalau memakai sistem_aktif() apa adanya, user tanpa akses
+            // E-Kas yang membuka /ekas akan dipantulkan ke /ekas lagi
+            // (redirect loop).
+            $tujuan = sistem_aktif();
+
+            if (!sistem_boleh($tujuan)) {
+                $tujuan = sistem_akses_user()[0] ?? null;
+            }
+
+            if ($tujuan === null) {
+                // Tidak punya akses ke sistem mana pun: jangan biarkan
+                // session hidup tanpa halaman tujuan.
+                session()->destroy();
+
+                return redirect()->to('/login');
+            }
+
+            return redirect()->to(sistem_home_url($tujuan));
         }
 
         // Ingat sistem terakhir yang dibuka user. Modul admin yang tidak

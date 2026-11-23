@@ -183,6 +183,8 @@ if (!function_exists('sistem_prefix_admin')) {
 
             // berlaku di kedua sistem
             'master/akun',
+            'master/akses',
+            'master/aksesmodul', // autoRoute /Master/AksesModul/...
 
             // Administrasi (grup menu 'Administrasi' di kedua sistem)
             'ekas/absensi',
@@ -349,7 +351,8 @@ if (!function_exists('sistem_boleh')) {
 if (!function_exists('sistem_boleh_path')) {
     /**
      * Cek hak akses untuk sebuah path URI: sistemnya harus boleh dibuka
-     * user, dan kalau path itu modul admin, levelnya harus admin.
+     * user, modulnya (kalau terdaftar) harus boleh dibuka, dan kalau path
+     * itu modul admin, levelnya harus admin.
      */
     function sistem_boleh_path(string $path): bool
     {
@@ -363,7 +366,13 @@ if (!function_exists('sistem_boleh_path')) {
             return true;
         }
 
-        return sistem_boleh($sistem);
+        if (!sistem_boleh($sistem)) {
+            return false;
+        }
+
+        // Modul hanya dibatasi kalau user memang sudah punya daftar modul
+        // untuk sistem ini (lihat sistem_akses_modul).
+        return sistem_boleh_modul($sistem, sistem_modul_dari_path($path));
     }
 }
 
@@ -454,7 +463,7 @@ if (!function_exists('sistem_menu')) {
                 [
                     'judul' => 'Home',
                     'items' => [
-                        ['label' => 'Dashboard', 'url' => 'ekas', 'icon' => 'ti ti-layout-dashboard', 'id' => 'dashboard_menu', 'prefix' => 'ekas'],
+                        ['label' => 'Dashboard', 'url' => 'ekas', 'icon' => 'ti ti-layout-dashboard', 'id' => 'dashboard_menu', 'prefix' => 'ekas', 'modul' => 'kas.home', 'selalu' => true],
                     ],
                 ],
                 [
@@ -465,8 +474,8 @@ if (!function_exists('sistem_menu')) {
                             'icon'     => 'ti ti-cash-banknote',
                             'prefix'   => 'ekas/keluar|ekas/riwayat',
                             'children' => [
-                                ['label' => 'Kas Pengeluaran', 'url' => 'ekas/keluar', 'icon' => 'ti ti-receipt-2', 'prefix' => 'ekas/keluar'],
-                                ['label' => 'Riwayat Kas Pengeluaran', 'url' => 'ekas/riwayat', 'icon' => 'ti ti-history', 'prefix' => 'ekas/riwayat'],
+                                ['label' => 'Kas Pengeluaran', 'url' => 'ekas/keluar', 'icon' => 'ti ti-receipt-2', 'prefix' => 'ekas/keluar', 'modul' => 'kas.keluar'],
+                                ['label' => 'Riwayat Kas Pengeluaran', 'url' => 'ekas/riwayat', 'icon' => 'ti ti-history', 'prefix' => 'ekas/riwayat', 'modul' => 'kas.riwayat'],
                             ],
                         ],
                         [
@@ -474,8 +483,8 @@ if (!function_exists('sistem_menu')) {
                             'icon'     => 'ti ti-cash',
                             'prefix'   => 'ekas/masuk',
                             'children' => [
-                                ['label' => 'Penerimaan Kas Air', 'url' => 'ekas/masuk', 'icon' => 'ti ti-droplet', 'prefix' => 'ekas/masuk'],
-                                ['label' => 'Penerimaan Kas Non Air', 'url' => 'ekas/masuk-non-air', 'icon' => 'ti ti-receipt', 'prefix' => 'ekas/masuk-non-air'],
+                                ['label' => 'Penerimaan Kas Air', 'url' => 'ekas/masuk', 'icon' => 'ti ti-droplet', 'prefix' => 'ekas/masuk', 'modul' => 'kas.masuk'],
+                                ['label' => 'Penerimaan Kas Non Air', 'url' => 'ekas/masuk-non-air', 'icon' => 'ti ti-receipt', 'prefix' => 'ekas/masuk-non-air', 'modul' => 'kas.masuk_non_air'],
                             ],
                         ],
                     ],
@@ -483,16 +492,16 @@ if (!function_exists('sistem_menu')) {
                 [
                     'judul' => 'Logistik',
                     'items' => [
-                        ['label' => 'Faktur Pembelian', 'url' => 'ekas/faktur-pembelian', 'icon' => 'ti ti-file-invoice', 'id' => 'faktur_pembelian_menu', 'prefix' => 'ekas/faktur-pembelian|ekas/barang-masuk'],
-                        ['label' => 'Entry Permintaan', 'url' => 'ekas/barang-keluar/permintaan', 'icon' => 'ti ti-clipboard-plus', 'id' => 'entry_permintaan_menu', 'prefix' => 'ekas/barang-keluar/permintaan'],
+                        ['label' => 'Faktur Pembelian', 'url' => 'ekas/faktur-pembelian', 'icon' => 'ti ti-file-invoice', 'id' => 'faktur_pembelian_menu', 'prefix' => 'ekas/faktur-pembelian|ekas/barang-masuk', 'modul' => 'kas.faktur_pembelian'],
+                        ['label' => 'Entry Permintaan', 'url' => 'ekas/barang-keluar/permintaan', 'icon' => 'ti ti-clipboard-plus', 'id' => 'entry_permintaan_menu', 'prefix' => 'ekas/barang-keluar/permintaan', 'modul' => 'kas.permintaan'],
                         [
                             'label'    => 'Gudang',
                             'icon'     => 'ti ti-building-warehouse',
                             'prefix'   => 'ekas/gudang',
                             'children' => [
-                                ['label' => 'Data Barang', 'url' => 'ekas/gudang/barang', 'icon' => 'ti ti-packages', 'prefix' => 'ekas/gudang/barang'],
-                                ['label' => 'Cek Permintaan', 'url' => 'ekas/gudang/cek-permintaan', 'icon' => 'ti ti-clipboard-check', 'prefix' => 'ekas/gudang/cek-permintaan'],
-                                ['label' => 'Opname Stok', 'url' => 'ekas/gudang/opname-stok', 'icon' => 'ti ti-clipboard-list', 'prefix' => 'ekas/gudang/opname-stok'],
+                                ['label' => 'Data Barang', 'url' => 'ekas/gudang/barang', 'icon' => 'ti ti-packages', 'prefix' => 'ekas/gudang/barang', 'modul' => 'kas.gudang.barang'],
+                                ['label' => 'Cek Permintaan', 'url' => 'ekas/gudang/cek-permintaan', 'icon' => 'ti ti-clipboard-check', 'prefix' => 'ekas/gudang/cek-permintaan', 'modul' => 'kas.gudang.cek_permintaan'],
+                                ['label' => 'Opname Stok', 'url' => 'ekas/gudang/opname-stok', 'icon' => 'ti ti-clipboard-list', 'prefix' => 'ekas/gudang/opname-stok', 'modul' => 'kas.gudang.opname'],
                             ],
                         ],
                     ],
@@ -500,7 +509,7 @@ if (!function_exists('sistem_menu')) {
                 [
                     'judul' => 'Laporan',
                     'items' => [
-                        ['label' => 'Rekap Persediaan', 'url' => 'ekas/laporan/rekap-persediaan', 'icon' => 'ti ti-chart-pie', 'prefix' => 'ekas/laporan/rekap-persediaan'],
+                        ['label' => 'Rekap Persediaan', 'url' => 'ekas/laporan/rekap-persediaan', 'icon' => 'ti ti-chart-pie', 'prefix' => 'ekas/laporan/rekap-persediaan', 'modul' => 'kas.laporan.rekap_persediaan'],
                     ],
                 ],
                 [
@@ -535,6 +544,7 @@ if (!function_exists('sistem_menu')) {
                     'admin' => true,
                     'items' => [
                         ['label' => 'User/Akun', 'url' => 'master/akun', 'icon' => 'ti ti-shield-lock', 'id' => 'akun_menu', 'prefix' => 'master/akun'],
+                        ['label' => 'Hak Akses Modul', 'url' => 'master/akses', 'icon' => 'ti ti-shield-check', 'id' => 'akses_menu', 'prefix' => 'master/akses'],
                         ['label' => 'Absensi', 'url' => 'ekas/absensi', 'icon' => 'ti ti-calendar-stats', 'id' => 'absensi_menu', 'prefix' => 'ekas/absensi'],
                         ['label' => 'Daftar Hadir Karyawan', 'url' => 'ekas/laporan/daftar-hadir', 'icon' => 'ti ti-calendar-event', 'prefix' => 'ekas/laporan/daftar-hadir'],
                         ['label' => 'Kinerja Pegawai', 'url' => 'ekas/laporan/kinerja-pegawai', 'icon' => 'ti ti-report-analytics', 'prefix' => 'ekas/laporan/kinerja-pegawai'],
@@ -550,19 +560,21 @@ if (!function_exists('sistem_menu')) {
             [
                 'judul' => 'Home',
                 'items' => [
-                    ['label' => 'Dashboard', 'url' => 'billing', 'icon' => 'ti ti-layout-dashboard', 'id' => 'dashboard_menu', 'prefix' => 'billing'],
+                    ['label' => 'Dashboard', 'url' => 'billing', 'icon' => 'ti ti-layout-dashboard', 'id' => 'dashboard_menu', 'prefix' => 'billing', 'modul' => 'billing.home', 'selalu' => true],
                 ],
             ],
             [
                 'judul' => 'Billing',
                 'items' => [
-                    ['label' => 'Pelanggan', 'url' => 'billing/pelanggan', 'icon' => 'ti ti-users', 'id' => 'pelanggan_menu', 'prefix' => 'billing/pelanggan'],
-                    ['label' => 'Loket Pembayaran', 'url' => 'billing/loket', 'icon' => 'ti ti-cash-banknote', 'id' => 'loket_menu', 'prefix' => 'billing/loket'],
+                    ['label' => 'Pelanggan', 'url' => 'billing/pelanggan', 'icon' => 'ti ti-users', 'id' => 'pelanggan_menu', 'prefix' => 'billing/pelanggan', 'modul' => 'billing.pelanggan'],
+                    ['label' => 'Loket Pembayaran', 'url' => 'billing/loket', 'icon' => 'ti ti-cash-banknote', 'id' => 'loket_menu', 'prefix' => 'billing/loket', 'modul' => 'billing.loket'],
                 ],
             ],
             [
                 // Terbit rekening = tugas kantor, sejalan dengan bs yang
                 // hanya menaruhnya di menu super admin / kantor.
+                // Grup ini admin-only, jadi modulnya tidak bisa diatur
+                // lewat Hak Akses Modul (lihat sistem_modul()).
                 'judul' => 'Tagihan (Kantor)',
                 'admin' => true,
                 'items' => [
@@ -601,14 +613,14 @@ if (!function_exists('sistem_menu')) {
             [
                 'judul' => 'Laporan',
                 'items' => [
-                    ['label' => 'DRD Air', 'url' => 'billing/laporan/drd-air', 'icon' => 'ti ti-droplet', 'prefix' => 'billing/laporan/drd-air'],
-                    ['label' => 'DRD Unit/Jenis', 'url' => 'billing/laporan/rekap-drd-air', 'icon' => 'ti ti-chart-pie', 'prefix' => 'billing/laporan/rekap-drd-air'],
-                    ['label' => 'Rincian Piutang Perunit', 'url' => 'billing/laporan/rincian-piutang-perunit', 'icon' => 'ti ti-chart-dots', 'prefix' => 'billing/laporan/rincian-piutang-perunit'],
-                    ['label' => 'Pelanggan Duplikat', 'url' => 'billing/laporan/pelanggan-duplikat', 'icon' => 'ti ti-file-analytics', 'prefix' => 'billing/laporan/pelanggan-duplikat'],
-                    ['label' => 'Rekapitulasi Piutang', 'url' => 'billing/laporan/rekapitulasi-piutang', 'icon' => 'ti ti-report-analytics', 'prefix' => 'billing/laporan/rekapitulasi-piutang'],
-                    ['label' => 'LPP Air Periodik', 'url' => 'billing/laporan/lpp-berjalan', 'icon' => 'ti ti-file-report', 'prefix' => 'billing/laporan/lpp-berjalan'],
-                    ['label' => 'LPP Per Petugas', 'url' => 'billing/laporan/lpp-petugas', 'icon' => 'ti ti-user-check', 'prefix' => 'billing/laporan/lpp-petugas'],
-                    ['label' => 'Rincian Tunggakan per Unit', 'url' => 'billing/laporan/tunggakan-per-unit', 'icon' => 'ti ti-file-search', 'prefix' => 'billing/laporan/tunggakan-per-unit'],
+                    ['label' => 'DRD Air', 'url' => 'billing/laporan/drd-air', 'icon' => 'ti ti-droplet', 'prefix' => 'billing/laporan/drd-air', 'modul' => 'billing.laporan.drd_air'],
+                    ['label' => 'DRD Unit/Jenis', 'url' => 'billing/laporan/rekap-drd-air', 'icon' => 'ti ti-chart-pie', 'prefix' => 'billing/laporan/rekap-drd-air', 'modul' => 'billing.laporan.rekap_drd'],
+                    ['label' => 'Rincian Piutang Perunit', 'url' => 'billing/laporan/rincian-piutang-perunit', 'icon' => 'ti ti-chart-dots', 'prefix' => 'billing/laporan/rincian-piutang-perunit', 'modul' => 'billing.laporan.piutang_perunit'],
+                    ['label' => 'Pelanggan Duplikat', 'url' => 'billing/laporan/pelanggan-duplikat', 'icon' => 'ti ti-file-analytics', 'prefix' => 'billing/laporan/pelanggan-duplikat', 'modul' => 'billing.laporan.pelanggan_duplikat'],
+                    ['label' => 'Rekapitulasi Piutang', 'url' => 'billing/laporan/rekapitulasi-piutang', 'icon' => 'ti ti-report-analytics', 'prefix' => 'billing/laporan/rekapitulasi-piutang', 'modul' => 'billing.laporan.rekapitulasi_piutang'],
+                    ['label' => 'LPP Air Periodik', 'url' => 'billing/laporan/lpp-berjalan', 'icon' => 'ti ti-file-report', 'prefix' => 'billing/laporan/lpp-berjalan', 'modul' => 'billing.laporan.lpp_berjalan'],
+                    ['label' => 'LPP Per Petugas', 'url' => 'billing/laporan/lpp-petugas', 'icon' => 'ti ti-user-check', 'prefix' => 'billing/laporan/lpp-petugas', 'modul' => 'billing.laporan.lpp_petugas'],
+                    ['label' => 'Rincian Tunggakan per Unit', 'url' => 'billing/laporan/tunggakan-per-unit', 'icon' => 'ti ti-file-search', 'prefix' => 'billing/laporan/tunggakan-per-unit', 'modul' => 'billing.laporan.tunggakan_unit'],
                 ],
             ],
             [
@@ -616,9 +628,285 @@ if (!function_exists('sistem_menu')) {
                 'admin' => true,
                 'items' => [
                     ['label' => 'User/Akun', 'url' => 'master/akun', 'icon' => 'ti ti-shield-lock', 'id' => 'akun_menu', 'prefix' => 'master/akun'],
+                    ['label' => 'Hak Akses Modul', 'url' => 'master/akses', 'icon' => 'ti ti-shield-check', 'id' => 'akses_menu', 'prefix' => 'master/akses'],
                 ],
             ],
         ];
+    }
+}
+
+if (!function_exists('sistem_modul')) {
+    /**
+     * Daftar modul yang bisa diatur per user.
+     *
+     * Sumbernya menu tiap sistem (sistem_menu()), memakai kunci 'modul'
+     * pada tiap item. Grup bertanda admin TIDAK masuk daftar: modul itu
+     * tetap hanya untuk level admin dan tidak bisa dibuka lewat
+     * t_akses_modul.
+     *
+     * Modul bertanda 'selalu' (dashboard) tidak bisa dicabut — kalau
+     * dicabut, redirect setelah login akan berputar tanpa henti.
+     *
+     * @return array<string, array{sistem:string,label:string,prefix:string,grup:string,selalu:bool}>
+     */
+    function sistem_modul(): array
+    {
+        static $daftar = null;
+
+        if ($daftar !== null) {
+            return $daftar;
+        }
+
+        $daftar = [];
+
+        foreach (array_keys(sistem_daftar()) as $sistem) {
+            foreach (sistem_menu($sistem) as $grup) {
+                if (!empty($grup['admin'])) {
+                    continue;
+                }
+
+                foreach ($grup['items'] as $item) {
+                    $semua = array_merge([$item], $item['children'] ?? []);
+
+                    foreach ($semua as $it) {
+                        if (empty($it['modul'])) {
+                            continue;
+                        }
+
+                        $daftar[$it['modul']] = [
+                            'sistem' => $sistem,
+                            'label'  => $it['label'] ?? $it['modul'],
+                            'prefix' => $it['prefix'] ?? $it['url'] ?? '',
+                            'grup'   => $grup['judul'] ?? '',
+                            'selalu' => !empty($it['selalu']),
+                        ];
+                    }
+                }
+            }
+        }
+
+        return $daftar;
+    }
+}
+
+if (!function_exists('sistem_modul_per_sistem')) {
+    /**
+     * Daftar modul satu sistem, dikelompokkan per grup menu.
+     *
+     * @return array<string, list<array{modul:string,label:string,selalu:bool}>>
+     */
+    function sistem_modul_per_sistem(string $sistem): array
+    {
+        $hasil = [];
+
+        foreach (sistem_modul() as $kode => $info) {
+            if ($info['sistem'] !== $sistem) {
+                continue;
+            }
+
+            // Dashboard ('selalu') tidak bisa dicabut, jadi tidak perlu
+            // ditampilkan di form maupun dihitung sebagai modul.
+            if ($info['selalu']) {
+                continue;
+            }
+
+            $hasil[$info['grup']][] = [
+                'modul'  => $kode,
+                'label'  => $info['label'],
+                'selalu' => false,
+            ];
+        }
+
+        return $hasil;
+    }
+}
+
+if (!function_exists('sistem_modul_dari_path')) {
+    /**
+     * Modul yang menaungi sebuah path URI (prefix terpanjang menang).
+     *
+     * @return string|null kode modul, atau null kalau path tidak terdaftar
+     */
+    function sistem_modul_dari_path(?string $path): ?string
+    {
+        $path = sistem_normalisasi_path($path);
+
+        if ($path === '') {
+            return null;
+        }
+
+        $cocok   = null;
+        $panjang = -1;
+
+        foreach (sistem_modul() as $kode => $info) {
+            foreach (explode('|', (string) $info['prefix']) as $prefix) {
+                $prefix = sistem_normalisasi_path($prefix);
+
+                if ($prefix === '') {
+                    continue;
+                }
+
+                if ($path === $prefix) {
+                    if (strlen($prefix) > $panjang) {
+                        $panjang = strlen($prefix);
+                        $cocok   = $kode;
+                    }
+
+                    continue;
+                }
+
+                // Modul 'selalu' (dashboard) hanya mencakup halaman depannya
+                // sendiri. Kalau prefix-nya ikut menaungi sub-path, semua
+                // halaman yang belum punya modul akan lolos lewat dashboard.
+                if ($info['selalu']) {
+                    continue;
+                }
+
+                if (strpos($path, $prefix . '/') === 0 && strlen($prefix) > $panjang) {
+                    $panjang = strlen($prefix);
+                    $cocok   = $kode;
+                }
+            }
+        }
+
+        return $cocok;
+    }
+}
+
+if (!function_exists('sistem_akses_modul')) {
+    /**
+     * Modul yang boleh dibuka user pada satu sistem.
+     *
+     * Array kosong berarti BELUM dibatasi: semua modul sistem itu boleh
+     * (perilaku lama). Baris di t_akses_modul mempersempit.
+     *
+     * @return list<string>
+     */
+    function sistem_akses_modul(?string $id_session, string $sistem): array
+    {
+        static $cache = [];
+
+        $id_session = $id_session ?: session('id_session');
+
+        if (empty($id_session)) {
+            return [];
+        }
+
+        $kunci = $id_session . '|' . $sistem;
+
+        if (array_key_exists($kunci, $cache)) {
+            return $cache[$kunci];
+        }
+
+        try {
+            $rows = \Config\Database::connect()
+                ->table('t_akses_modul')
+                ->select('modul')
+                ->where('id_session', $id_session)
+                ->where('sistem', $sistem)
+                ->get()
+                ->getResultArray();
+        } catch (\Throwable $e) {
+            // Tabel belum dibuat: jangan kunci user keluar.
+            log_message('warning', 't_akses_modul tidak bisa dibaca: ' . $e->getMessage());
+
+            return $cache[$kunci] = [];
+        }
+
+        return $cache[$kunci] = array_values(array_unique(array_column($rows, 'modul')));
+    }
+}
+
+if (!function_exists('sistem_boleh_modul')) {
+    /**
+     * Apakah user sekarang boleh membuka satu modul.
+     */
+    function sistem_boleh_modul(string $sistem, ?string $modul): bool
+    {
+        if ($modul === null) {
+            return true;
+        }
+
+        if (session('level') === 'admin') {
+            return true;
+        }
+
+        $info = sistem_modul()[$modul] ?? null;
+
+        if ($info === null) {
+            // Modul tak dikenal (menu admin / belum terdaftar): jangan
+            // pernah diloloskan lewat jalur ini.
+            return false;
+        }
+
+        if ($info['selalu']) {
+            return true;
+        }
+
+        $akses = sistem_akses_modul(null, $sistem);
+
+        if (empty($akses)) {
+            return true;
+        }
+
+        return in_array($modul, $akses, true);
+    }
+}
+
+if (!function_exists('sistem_menu_terlihat')) {
+    /**
+     * sistem_menu() yang sudah disaring hak akses user:
+     * grup admin disembunyikan untuk non-admin, item yang modulnya tidak
+     * boleh dibuka dibuang, grup kosong ikut hilang.
+     */
+    function sistem_menu_terlihat(string $sistem): array
+    {
+        $level = session('level');
+        $hasil = [];
+
+        foreach (sistem_menu($sistem) as $grup) {
+            if (!empty($grup['admin']) && $level !== 'admin') {
+                continue;
+            }
+
+            $items = [];
+
+            foreach ($grup['items'] as $item) {
+                if (!empty($item['modul']) && !sistem_boleh_modul($sistem, $item['modul'])) {
+                    continue;
+                }
+
+                if (!empty($item['children'])) {
+                    $anak = [];
+
+                    foreach ($item['children'] as $c) {
+                        if (!empty($c['modul']) && !sistem_boleh_modul($sistem, $c['modul'])) {
+                            continue;
+                        }
+
+                        $anak[] = $c;
+                    }
+
+                    // Item induk tanpa anak tersisa tidak berguna.
+                    if (empty($anak)) {
+                        continue;
+                    }
+
+                    $item['children'] = $anak;
+                }
+
+                $items[] = $item;
+            }
+
+            if (empty($items)) {
+                continue;
+            }
+
+            $grup['items'] = $items;
+            $hasil[]       = $grup;
+        }
+
+        return $hasil;
     }
 }
 

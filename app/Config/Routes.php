@@ -28,25 +28,71 @@ $routes->post('/login', 'Login::login');
 // Data master billing hanya untuk admin (dicek FilterSistem + sidebar).
 // =====================================================================
 $routes->get('/billing', 'Home::billing');
-$routes->get('/pelanggan', 'Pelanggan::index');
+$routes->get('/billing/pelanggan', 'Pelanggan::index');
+
+// loket pembayaran
+$routes->get('/billing/loket', 'Billing\Loket::index');
+$routes->get('/billing/loket/kwitansi_pdf/(:segment)', 'Billing\Loket::kwitansi_pdf/$1');
+
+// tagihan: entry pemakaian, pembayaran massal, cetak, cek duplikat
+$routes->get('/billing/tagihan', 'Billing\Tagihan::index');
+$routes->get('/billing/tagihan/duplikat', 'Billing\Tagihan::duplikat');
+
+// catat meter: verifikasi hasil pencatatan petugas
+$routes->get('/billing/catat-meter', 'Billing\CatatMeter::index');
+
+// dashboard pemantauan penagihan & BMS
+$routes->get('/billing/system', 'Billing\BillingSystem::index');
 
 // master billing
-$routes->get('/master/set-kelompok-tarif', 'Master\SetKelompokTarif::index');
-$routes->get('/master/set-jenis-pelanggan', 'Master\SetJenisPelanggan::index');
-$routes->get('/master/pelanggan', 'Master\Pelanggan::index');
-$routes->get('/master/pasang-meter', 'Master\Pelanggan::pasangMeter');
+$routes->get('/billing/master/set-kelompok-tarif', 'Master\SetKelompokTarif::index');
+$routes->get('/billing/master/set-jenis-pelanggan', 'Master\SetJenisPelanggan::index');
+$routes->get('/billing/master/pelanggan', 'Master\Pelanggan::index');
+$routes->get('/billing/master/pasang-meter', 'Master\Pelanggan::pasangMeter');
 
 // master wilayah
-$routes->get('/master/kabupaten', 'Master\Wilayah::kab');
-$routes->get('/master/kecamatan', 'Master\Wilayah::kec');
-$routes->get('/master/kelurahan', 'Master\Wilayah::kel');
+$routes->get('/billing/master/kabupaten', 'Master\Wilayah::kab');
+$routes->get('/billing/master/kecamatan', 'Master\Wilayah::kec');
+$routes->get('/billing/master/kelurahan', 'Master\Wilayah::kel');
 
 // laporan billing
-$routes->get('/laporan/drd-air', 'Laporan\DrdAir::index');
-$routes->get('/laporan/rekap-drd-air', 'Laporan\RekapDrdAir::index');
-$routes->get('/laporan/rincian-piutang-perunit', 'Laporan\RincianPiutangPerunit::index');
-$routes->get('/laporan/pelanggan-duplikat', 'Laporan\PelangganDuplikat::index');
-$routes->get('/laporan/rekapitulasi-piutang', 'Laporan\RekapitulasiPiutang::index');
+$routes->get('/billing/laporan/drd-air', 'Laporan\DrdAir::index');
+$routes->get('/billing/laporan/rekap-drd-air', 'Laporan\RekapDrdAir::index');
+$routes->get('/billing/laporan/rincian-piutang-perunit', 'Laporan\RincianPiutangPerunit::index');
+$routes->get('/billing/laporan/pelanggan-duplikat', 'Laporan\PelangganDuplikat::index');
+$routes->get('/billing/laporan/rekapitulasi-piutang', 'Laporan\RekapitulasiPiutang::index');
+$routes->get('/billing/laporan/lpp-berjalan', 'Laporan\LppBerjalan::index');
+$routes->get('/billing/laporan/lpp-petugas', 'Laporan\LppPetugas::index');
+$routes->get('/billing/laporan/tunggakan-per-unit', 'Laporan\TunggakanPerUnit::index');
+
+// =====================================================================
+// URL LAMA MODUL BILLING -> redirect 301 ke prefix /billing
+// Endpoint AJAX (autoRoute: /Master/Pelanggan/data, /Pelanggan/data,
+// /Laporan/DrdAir/datatable, dst) sengaja TIDAK dipindah, sama seperti
+// E-Kas: halaman yang berprefix, AJAX tetap di URL controllernya.
+// =====================================================================
+foreach ([
+    'pelanggan',
+    'tagihan',
+    'tagihan/duplikat',
+    'master/set-kelompok-tarif',
+    'master/set-jenis-pelanggan',
+    'master/pelanggan',
+    'master/pasang-meter',
+    'master/kabupaten',
+    'master/kecamatan',
+    'master/kelurahan',
+    'laporan/drd-air',
+    'laporan/rekap-drd-air',
+    'laporan/rincian-piutang-perunit',
+    'laporan/pelanggan-duplikat',
+    'laporan/rekapitulasi-piutang',
+    'laporan/lpp-berjalan',
+    'laporan/lpp-petugas',
+    'laporan/tunggakan-per-unit',
+] as $lamaBilling) {
+    $routes->get('/' . $lamaBilling, static fn () => redirect()->to(base_url('billing/' . $lamaBilling), 301));
+}
 
 // =====================================================================
 // SISTEM E-KAS
@@ -56,6 +102,7 @@ $routes->get('/ekas', 'Home::ekas');
 
 // master kas
 $routes->get('/ekas/master/perkiraan', 'Master\Perkiraan::index');
+$routes->get('/ekas/master/perkiraan-group', 'Master\PerkiraanGroup::index');
 $routes->get('/ekas/master/jabatan', 'Master\Jabatan::index');
 $routes->get('/ekas/master/tugas-pokok', 'Master\Pokok::index');
 $routes->get('/ekas/master/pokok', 'Master\Pokok::index');
@@ -114,6 +161,7 @@ $routes->get('/ekas/persuratan', 'Persuratan::index');
 // =====================================================================
 foreach ([
     'master/perkiraan',
+    'master/perkiraan-group',
     'master/jabatan',
     'master/tugas-pokok',
     'master/pokok',
@@ -140,6 +188,7 @@ foreach ([
 // ADMIN (berlaku di kedua sistem)
 // =====================================================================
 $routes->get('/master/akun', 'Master\Akun::index');
+$routes->get('/master/akses', 'Master\AksesModul::index');
 
 $routes->get('/isSession', function () {
     $response = service('response');

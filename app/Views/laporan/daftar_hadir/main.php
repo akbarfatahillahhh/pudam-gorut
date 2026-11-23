@@ -187,7 +187,7 @@
             return;
         }
 
-        $('#framePdf').attr('src', "<?= base_url('laporan/daftar-hadir/pdf') ?>/" + bulan + "/" + tahun + "/" + unit);
+        $('#framePdf').attr('src', "<?= base_url('ekas/laporan/daftar-hadir/pdf') ?>/" + bulan + "/" + tahun + "/" + unit);
         bootstrap.Modal.getOrCreateInstance(document.getElementById('modalPdf')).show();
     });
 </script>

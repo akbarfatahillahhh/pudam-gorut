@@ -11,7 +11,6 @@
  *             dipakai sistem_aktif() berdasarkan URI.
  */
 $sistem = $sistem ?? sistem_aktif();
-$level  = session('level');
 $path   = strtolower(trim(service('request')->getUri()->getPath(), '/'));
 
 $aktif = static function (string $prefix) use ($path): bool {
@@ -52,13 +51,7 @@ $aktif = static function (string $prefix) use ($path): bool {
         </div>
         <nav class="sidebar-nav scroll-sidebar" data-simplebar="">
             <ul id="sidebarnav">
-                <?php foreach (sistem_menu($sistem) as $grup): ?>
-                    <?php
-                    // Data Master & Administrasi hanya untuk admin.
-                    if (!empty($grup['admin']) && $level !== 'admin') {
-                        continue;
-                    }
-                    ?>
+                <?php foreach (sistem_menu_terlihat($sistem) as $grup): ?>
                     <li class="nav-small-cap">
                         <i class="ti ti-dots nav-small-cap-icon fs-4"></i>
                         <span class="hide-menu"><?= esc($grup['judul']) ?></span>

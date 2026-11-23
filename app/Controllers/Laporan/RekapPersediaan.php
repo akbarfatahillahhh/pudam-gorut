@@ -5,167 +5,342 @@ namespace App\Controllers\Laporan;
 use App\Controllers\BaseController;
 use Hermawan\DataTables\DataTable;
 
+/**
+ * Rekap Persediaan: mutasi stok barang gudang per periode.
+ *
+ * Sebelumnya controller ini adalah salinan PelangganDuplikat — judul,
+ * query, dan PDF-nya semuanya data pelanggan. Sekarang benar-benar
+ * membaca tabel logistik:
+ *
+ *   stok awal  = jumlah_stok_akhir baris mutasi terakhir SEBELUM periode
+ *   masuk      = SUM(logistik_penerimaan_tampung.stok_diterima)
+ *   keluar     = SUM(logistik_permintaan_tampung.stok_diberikan)
+ *   stok akhir = stok awal + masuk - keluar
+ *
+ * Kolom stok_akhir di logistik_barang sengaja TIDAK dipakai sebagai
+ * sumber: nilainya stok saat ini, bukan stok pada periode yang dipilih.
+ */
 class RekapPersediaan extends BaseController
 {
     var $title;
+
     public function __construct()
     {
-        $this->title = "Rekap Persediaan";
+        $this->title = 'Rekap Persediaan';
     }
 
     public function index()
     {
-        $data['title'] = $this->title;
-        $data['daftarBulan'] = [
-            '01' => 'Januari',
-            '02' => 'Februari',
-            '03' => 'Maret',
-            '04' => 'April',
-            '05' => 'Mei',
-            '06' => 'Juni',
-            '07' => 'Juli',
-            '08' => 'Agustus',
-            '09' => 'September',
-            '10' => 'Oktober',
-            '11' => 'November',
-            '12' => 'Desember'
-        ];
-        return view('/laporan/rekap_persediaan/main', $data);
+        return view('laporan/rekap_persediaan/main', [
+            'title'       => $this->title,
+            'daftarBulan' => [
+                '01' => 'Januari', '02' => 'Februari', '03' => 'Maret',
+                '04' => 'April', '05' => 'Mei', '06' => 'Juni',
+                '07' => 'Juli', '08' => 'Agustus', '09' => 'September',
+                '10' => 'Oktober', '11' => 'November', '12' => 'Desember',
+            ],
+        ]);
     }
 
+    /**
+     * Potongan halaman tabel rekap (dipanggil dari main.php).
+     */
     public function loadPage()
     {
-        $msg = ['page' =>  view('/laporan/rekap_persediaan/page/main')];
+        $msg = ['page' => view('/laporan/rekap_persediaan/page/main')];
         echo json_encode($msg);
     }
 
+    /**
+     * Data tabel rekap untuk bulan/tahun terpilih.
+     */
     public function datatable()
     {
-        $unit = $this->request->getVar('unit');
-        $parameter = $this->request->getVar('parameter');
+        [$bulan, $tahun] = $this->periode();
 
-        $allowedColumns = ['no_sambungan', 'nama_pelanggan'];
-        if (!in_array($parameter, $allowedColumns)) {
-            return $this->response->setJSON(['error' => 'Parameter tidak valid']);
+        if ($bulan === null) {
+            return $this->response->setJSON(['error' => 'Bulan dan tahun wajib dipilih.']);
         }
 
-        $builder = $this->db->table('m_pelanggan p');
-        $builder->select("p.no_sambungan, p.nama_pelanggan, j.jenis_pelanggan, k.kecamatan, l.kelurahan");
-        $builder->join('m_jenis_pelanggan j', 'j.id_jenis = p.id_jenis');
-        $builder->join('t_kecamatan k', 'k.id_kec = p.id_kec');
-        $builder->join('t_kelurahan l', 'l.id_kelurahan = p.id_kelurahan');
-        $builder->where('k.id_kec', $unit);
-        $builder->orderBy("p.$parameter", 'ASC');
+        [$awal, $akhir] = $this->batasPeriode($bulan, $tahun);
 
-        $subQuery = $this->db->table('m_pelanggan')
-            ->select($parameter)
-            ->groupBy($parameter)
-            ->having('COUNT(*) >', 1)
-            ->get()
-            ->getResultArray();
+        $builder = $this->db->table('logistik_barang b')
+            ->select('
+                b.id,
+                b.barang_kode,
+                b.barang_nama,
+                b.satuan,
+                b.harga
+            ')
+            ->orderBy('b.barang_nama', 'ASC');
 
-        $duplicateValues = array_column($subQuery, $parameter);
-
-        if (!empty($duplicateValues)) {
-            $builder->whereIn("p.$parameter", $duplicateValues);
-        }
-
-        return DataTable::of($builder)->toJson(true);
+        return DataTable::of($builder)
+            ->add('stok_awal', function ($row) use ($awal, $akhir) {
+                return $this->hitungBarang((int) $row->id, $awal, $akhir)['stok_awal'];
+            })
+            ->add('masuk', function ($row) use ($awal, $akhir) {
+                return $this->hitungBarang((int) $row->id, $awal, $akhir)['masuk'];
+            })
+            ->add('keluar', function ($row) use ($awal, $akhir) {
+                return $this->hitungBarang((int) $row->id, $awal, $akhir)['keluar'];
+            })
+            ->add('stok_akhir', function ($row) use ($awal, $akhir) {
+                return $this->hitungBarang((int) $row->id, $awal, $akhir)['stok_akhir'];
+            })
+            ->toJson(true);
     }
-
 
     public function modal_export_pdf()
     {
-        $data['parameter'] = $this->request->getVar('parameter');
-        $data['unit'] = $this->request->getVar('unit');
+        [$bulan, $tahun] = $this->periode();
 
+        $msg = [
+            'html' => view('laporan/rekap_persediaan/modal/pdf', [
+                'bulan' => $bulan,
+                'tahun' => $tahun,
+            ]),
+        ];
 
-        $msg = ['html' => view('laporan/pelanggan_duplikat/modal/pdf', $data)];
         echo json_encode($msg);
     }
 
-    public function export_pdf($parameter, $unit)
+    public function export_pdf()
     {
-        $html = '<div style="margin-top: 10px;">';
-        $html .= "<h3 align='center' style='margin-bottom: 0px; margin-top: 0px;'>LAPORAN DATA PELANGGAN DUPLIKAT</h3>";
+        [$bulan, $tahun] = $this->periode();
 
-        $kecamatan = $this->db->table('t_kecamatan')->select('kecamatan')->where('id_kec', $unit)->get()->getRow()->kecamatan;
+        if ($bulan === null) {
+            return $this->response->setStatusCode(400)->setBody('Bulan dan tahun wajib dipilih.');
+        }
 
-        $html .= "<h3 align='center' style='margin-bottom: 0px; margin-top: 0px;'>UNIT : " . strtoupper($kecamatan) . "</h3>";
+        [$awal, $akhir] = $this->batasPeriode($bulan, $tahun);
 
+        $namaBulan = ['', 'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+                      'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
 
-        $html .= '<br>';
-        $html .= '<div class="table">';
-        $html .= '<table>';
-        $html .= '<tr>';
-        $html .= '<th width="5%" rowspan="2">No</th>';
-        $html .= '<th rowspan="2">No. Sambung</th>';
-        $html .= '<th rowspan="2">Nama Pelanggan</th>';
-        $html .= '<th colspan="2">Alamat</th>';
-        $html .= '<th rowspan="2">Jenis Pelanggan</th>';
-        $html .= '</tr>';
-        $html .= '<tr>';
-        $html .= '<th>Kecamatan</th>';
-        $html .= '<th>Kelurahan</th>';
-        $html .= '</tr>';
-
-        $builder = $this->db->table('m_pelanggan p');
-        $builder->select("p.no_sambungan, p.nama_pelanggan, j.jenis_pelanggan, k.kecamatan, l.kelurahan");
-        $builder->join('m_jenis_pelanggan j', 'j.id_jenis = p.id_jenis');
-        $builder->join('t_kecamatan k', 'k.id_kec = p.id_kec');
-        $builder->join('t_kelurahan l', 'l.id_kelurahan = p.id_kelurahan');
-        $builder->where('k.id_kec', $unit);
-        $builder->orderBy("p.$parameter", 'ASC');
-
-        $subQuery = $this->db->table('m_pelanggan')
-            ->select($parameter)
-            ->groupBy($parameter)
-            ->having('COUNT(*) >', 1)
+        $barang = $this->db->table('logistik_barang b')
+            ->select('b.id, b.barang_kode, b.barang_nama, b.satuan')
+            ->orderBy('b.barang_nama', 'ASC')
             ->get()
             ->getResultArray();
 
-        $duplicateValues = array_column($subQuery, $parameter);
+        $html = '<div style="margin-top:10px;">';
+        $html .= "<h3 align='center' style='margin:0;'>REKAP PERSEDIAAN BARANG</h3>";
+        $html .= "<p align='center' style='margin:0 0 10px;'><b>PERIODE : "
+            . strtoupper($namaBulan[$bulan]) . ' ' . $tahun . "</b></p>";
 
-        if (!empty($duplicateValues)) {
-            $builder->whereIn("p.$parameter", $duplicateValues);
-        }
+        $html .= '<div class="table"><table>';
+        $html .= '<tr>';
+        $html .= '<th width="4%">No</th>';
+        $html .= '<th width="12%">Kode Barang</th>';
+        $html .= '<th>Nama Barang</th>';
+        $html .= '<th width="8%">Satuan</th>';
+        $html .= '<th width="8%">Stok Awal</th>';
+        $html .= '<th width="8%">Masuk</th>';
+        $html .= '<th width="8%">Keluar</th>';
+        $html .= '<th width="8%">Stok Akhir</th>';
+        $html .= '</tr>';
 
-        $result = $builder->get()->getResultArray();
+        $totalAwal = 0;
+        $totalMasuk = 0;
+        $totalKeluar = 0;
+        $totalAkhir = 0;
 
-        if ($result) {
-            foreach ($result as $key => $value) {
-                $html .= '<tr>';
-                $html .= '<td class="text-center">' . ($key + 1) . '</td>';
-                $html .= '<td class="text-center">' . $value['no_sambungan'] . '</td>';
-                $html .= '<td>' . $value['nama_pelanggan'] . '</td>';
-                $html .= '<td>' . $value['kecamatan'] . '</td>';
-                $html .= '<td>' . $value['kelurahan'] . '</td>';
-                $html .= '<td>' . $value['jenis_pelanggan'] . '</td>';
-                $html .= '</tr>';
-            }
-        } else {
+        foreach ($barang as $i => $b) {
+            $hitung = $this->hitungBarang((int) $b['id'], $awal, $akhir);
+
             $html .= '<tr>';
-            $html .= '<td colspan="6" class="text-center">Tidak Ada Data</td>';
+            $html .= '<td class="text-center">' . ($i + 1) . '</td>';
+            $html .= '<td>' . esc($b['barang_kode']) . '</td>';
+            $html .= '<td>' . esc($b['barang_nama']) . '</td>';
+            $html .= '<td class="text-center">' . esc($b['satuan']) . '</td>';
+            $html .= '<td class="text-right">' . number_format($hitung['stok_awal'], 0, ',', '.') . '</td>';
+            $html .= '<td class="text-right">' . number_format($hitung['masuk'], 0, ',', '.') . '</td>';
+            $html .= '<td class="text-right">' . number_format($hitung['keluar'], 0, ',', '.') . '</td>';
+            $html .= '<td class="text-right"><b>' . number_format($hitung['stok_akhir'], 0, ',', '.') . '</b></td>';
             $html .= '</tr>';
+
+            $totalAwal   += $hitung['stok_awal'];
+            $totalMasuk  += $hitung['masuk'];
+            $totalKeluar += $hitung['keluar'];
+            $totalAkhir  += $hitung['stok_akhir'];
         }
 
-        $html .= '</table></div></br>';
+        $html .= '<tr>';
+        $html .= '<td colspan="4" class="text-center"><b>Total</b></td>';
+        $html .= '<td class="text-right"><b>' . number_format($totalAwal, 0, ',', '.') . '</b></td>';
+        $html .= '<td class="text-right"><b>' . number_format($totalMasuk, 0, ',', '.') . '</b></td>';
+        $html .= '<td class="text-right"><b>' . number_format($totalKeluar, 0, ',', '.') . '</b></td>';
+        $html .= '<td class="text-right"><b>' . number_format($totalAkhir, 0, ',', '.') . '</b></td>';
+        $html .= '</tr>';
 
-        $data = ['html' => $html];
-        $page = view('pdf/potrait', $data);
+        $html .= '</table></div>';
+
+        $page = view('pdf/potrait', ['html' => $html]);
 
         $mpdf = new \Mpdf\Mpdf([
-            'mode' => 'utf-8',
-            'format' => 'A4',
-            'orientation' => 'P',
-            'default_font_size' => 10,
-            'default_font' => 'arial',
-            'tempDir' => __DIR__ . '/temp',
+            'mode'              => 'utf-8',
+            'format'            => 'A4',
+            'orientation'       => 'L',
+            'default_font_size' => 9,
+            'default_font'      => 'arial',
+            'tempDir'           => WRITEPATH . 'mpdf_temp',
         ]);
 
         $mpdf->WriteHTML($page);
-        $mpdf->SetTitle("LAPORAN PELANGGAN DUPLIKAT");
-        $this->response->setHeader('Content-Type', 'application/pdf');
-        $mpdf->Output("PDF", 'I');
+        $mpdf->SetTitle('REKAP PERSEDIAAN');
+
+        return $this->response
+            ->setHeader('Content-Type', 'application/pdf')
+            ->setBody($mpdf->Output('', 'S'));
+    }
+
+    // =================================================================
+    // BANTUAN
+    // =================================================================
+
+    /**
+     * @return array{0:int|null, 1:int|null}
+     */
+    private function periode(): array
+    {
+        $bulan = $this->request->getVar('bulan');
+        $tahun = $this->request->getVar('tahun');
+
+        if (! is_numeric($bulan) || ! is_numeric($tahun)) {
+            return [null, null];
+        }
+
+        $bulan = (int) $bulan;
+        $tahun = (int) $tahun;
+
+        if ($bulan < 1 || $bulan > 12 || $tahun < 2000) {
+            return [null, null];
+        }
+
+        return [$bulan, $tahun];
+    }
+
+    /**
+     * Batas periode [awal, akhir) supaya perbandingan tanggal sederhana.
+     *
+     * @return array{0:string, 1:string}
+     */
+    private function batasPeriode(int $bulan, int $tahun): array
+    {
+        $awal  = sprintf('%04d-%02d-01', $tahun, $bulan);
+        $akhir = date('Y-m-d', strtotime($awal . ' +1 month'));
+
+        return [$awal, $akhir];
+    }
+
+    /**
+     * Hitung stok awal / masuk / keluar / stok akhir satu barang
+     * dalam satu periode. Dasarnya daftar mutasi barang itu, diurutkan
+     * menurut tanggal.
+     *
+     * @return array{stok_awal:int, masuk:int, keluar:int, stok_akhir:int}
+     */
+    private function hitungBarang(int $barangId, string $awal, string $akhir): array
+    {
+        $mutasi = $this->semuaMutasi($barangId);
+
+        $sebelum = null;
+        $pertama = null;
+        $masuk   = 0;
+        $keluar  = 0;
+        $adaDalamPeriode = false;
+
+        foreach ($mutasi as $m) {
+            $tanggal = $m['tanggal'];
+
+            if (strcmp($tanggal, $awal) < 0) {
+                $sebelum = $m;
+                continue;
+            }
+
+            if ($pertama === null) {
+                $pertama = $m;
+            }
+
+            if (strcmp($tanggal, $akhir) < 0) {
+                $adaDalamPeriode = true;
+
+                if ($m['jenis'] === 'masuk') {
+                    $masuk += $m['delta'];
+                } else {
+                    $keluar += $m['delta'];
+                }
+            }
+        }
+
+        // Stok pembuka: mutasi terakhir sebelum periode, atau stok_awal
+        // dari mutasi pertama kalau pencatatan baru dimulai di periode ini.
+        $stokAwal = 0;
+
+        if ($sebelum !== null) {
+            $stokAwal = $sebelum['stok_akhir'];
+        } elseif ($pertama !== null) {
+            $stokAwal = $pertama['stok_awal'];
+        }
+
+        // Kalau tidak ada mutasi sama sekali dalam periode, stok tetap.
+        $stokAkhir = $adaDalamPeriode
+            ? $stokAwal + $masuk - $keluar
+            : $stokAwal;
+
+        // Barang yang belum pernah bergerak sama sekali: pakai stok
+        // terkini sebagai stok akhir (stok_akhir di logistik_barang
+        // adalah nilai sekarang, bukan nilai historis).
+        if ($sebelum === null && $pertama === null) {
+            $sekarang = $this->db->table('logistik_barang')
+                ->select('stok_akhir')
+                ->where('id', $barangId)
+                ->get()
+                ->getRowArray();
+
+            $stokAkhir = (int) ($sekarang['stok_akhir'] ?? 0);
+            $stokAwal  = $stokAkhir;
+        }
+
+        return [
+            'stok_awal'  => $stokAwal,
+            'masuk'      => $masuk,
+            'keluar'     => $keluar,
+            'stok_akhir' => $stokAkhir,
+        ];
+    }
+
+    /**
+     * Semua mutasi satu barang, urut dari yang paling lama.
+     *
+     * @return list<array{tanggal:string, jenis:string, stok_awal:int, stok_akhir:int, delta:int}>
+     */
+    private function semuaMutasi(int $barangId): array
+    {
+        $rows = $this->db->query(
+            "SELECT p.tanggal AS tanggal, 'masuk' AS jenis,
+                    pt.stok_awal, pt.stok_diterima AS delta, pt.jumlah_stok_akhir AS stok_akhir, pt.id AS urut
+             FROM logistik_penerimaan_tampung pt
+             JOIN logistik_penerimaan p ON p.no_faktur = pt.no_faktur
+             WHERE pt.barang_id = ?
+             UNION ALL
+             SELECT r.tanggal AS tanggal, 'keluar' AS jenis,
+                    rt.stok_awal, rt.stok_diberikan AS delta, rt.jumlah_stok_akhir AS stok_akhir, rt.id AS urut
+             FROM logistik_permintaan_tampung rt
+             JOIN logistik_permintaan r ON r.no_permintaan = rt.no_permintaan
+             WHERE rt.barang_id = ?
+             ORDER BY tanggal ASC, urut ASC",
+            [$barangId, $barangId]
+        )->getResultArray();
+
+        return array_map(static function ($r) {
+            return [
+                'tanggal'    => (string) $r['tanggal'],
+                'jenis'      => (string) $r['jenis'],
+                'stok_awal'  => (int) $r['stok_awal'],
+                'stok_akhir' => (int) $r['stok_akhir'],
+                'delta'      => (int) $r['delta'],
+            ];
+        }, $rows);
     }
 }

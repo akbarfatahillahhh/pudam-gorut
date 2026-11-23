@@ -43,6 +43,7 @@
                     data.dateStart = $('#dateStart').val();
                     data.dateEnd = $('#dateEnd').val();
                     data.statusLaporan = $('#statusLaporan').val();
+                    data.pelanggan = $('#pelanggan').val();
                     data.kel = $('.filter-per-kel #kel').val();
                 }
             },

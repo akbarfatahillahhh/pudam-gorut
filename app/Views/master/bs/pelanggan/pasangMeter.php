@@ -1,6 +1,6 @@
 <div class="card border border-dark">
     <div class="card-body p-4">
-        <a href="<?= base_url('master/pelanggan') ?>" class="badge bg-danger text-light mb-4">Kembali</a>
+        <a href="<?= base_url('billing/master/pelanggan') ?>" class="badge bg-danger text-light mb-4">Kembali</a>
         <div class="row">
             <div class="col-6">
                 <h5 class="card-title fw-semibold mb-4"><?= $title ?></h5>

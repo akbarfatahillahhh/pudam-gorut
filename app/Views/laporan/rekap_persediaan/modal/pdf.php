@@ -2,12 +2,12 @@
     <div class="modal-dialog modal-fullscreen modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header border-bottom">
-                <h1 class="modal-title fs-5 text-uppercase" id="modalLabel">EXPORT LAPORAN REKAPAN REKENING DITAGIH (DRD) AIR</h1>
+                <h1 class="modal-title fs-5" id="modalLabel">REKAP PERSEDIAAN</h1>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
                 <div class="h-100 w-100">
-                    <iframe src="<?= base_url('Laporan/PelangganDuplikat/export_pdf') ?>/<?= $parameter ?>/<?= $unit ?>" class="h-100 w-100"></iframe>
+                    <iframe src="<?= base_url('Laporan/RekapPersediaan/export_pdf') ?>?bulan=<?= (int) $bulan ?>&tahun=<?= (int) $tahun ?>" class="h-100 w-100"></iframe>
                 </div>
             </div>
         </div>

@@ -25,6 +25,14 @@ class PelangganDuplikat extends BaseController
         echo json_encode($msg);
     }
 
+    /**
+     * Unit kosong / 'ALL' berarti semua unit.
+     */
+    private function semuaUnit($unit): bool
+    {
+        return $unit === null || $unit === '' || $unit === 'ALL' || $unit === 'all';
+    }
+
     public function datatable()
     {
         $unit = $this->request->getVar('unit');
@@ -40,7 +48,11 @@ class PelangganDuplikat extends BaseController
         $builder->join('m_jenis_pelanggan j', 'j.id_jenis = p.id_jenis');
         $builder->join('t_kecamatan k', 'k.id_kec = p.id_kec');
         $builder->join('t_kelurahan l', 'l.id_kelurahan = p.id_kelurahan');
-        $builder->where('k.id_kec', $unit);
+
+        if (! $this->semuaUnit($unit)) {
+            $builder->where('k.id_kec', (int) $unit);
+        }
+
         $builder->orderBy("p.$parameter", 'ASC');
 
         $subQuery = $this->db->table('m_pelanggan')
@@ -72,10 +84,37 @@ class PelangganDuplikat extends BaseController
 
     public function export_pdf($parameter, $unit)
     {
+        // Sama seperti datatable(): kolom dibatasi daftar putih supaya
+        // nilai dari URL tidak masuk ke ORDER BY / GROUP BY.
+        $allowedColumns = ['no_sambungan', 'nama_pelanggan'];
+
+        if (! in_array($parameter, $allowedColumns, true)) {
+            return $this->response->setStatusCode(400)
+                ->setBody('Parameter tidak valid. Gunakan no_sambungan atau nama_pelanggan.');
+        }
+
         $html = '<div style="margin-top: 10px;">';
         $html .= "<h3 align='center' style='margin-bottom: 0px; margin-top: 0px;'>LAPORAN DATA PELANGGAN DUPLIKAT</h3>";
 
-        $kecamatan = $this->db->table('t_kecamatan')->select('kecamatan')->where('id_kec', $unit)->get()->getRow()->kecamatan;
+        // Unit kosong/'ALL' berarti semua unit — sebelumnya nilai itu
+        // langsung dipakai di WHERE dan memicu "Unknown column 'ALL'".
+        $semuaUnit = $this->semuaUnit($unit);
+
+        $kecamatan = 'SEMUA UNIT';
+
+        if (! $semuaUnit) {
+            $rowUnit = $this->db->table('t_kecamatan')
+                ->select('kecamatan')
+                ->where('id_kec', (int) $unit)
+                ->get()
+                ->getRow();
+
+            if ($rowUnit === null) {
+                return $this->response->setStatusCode(404)->setBody('Unit tidak ditemukan.');
+            }
+
+            $kecamatan = $rowUnit->kecamatan;
+        }
 
         $html .= "<h3 align='center' style='margin-bottom: 0px; margin-top: 0px;'>UNIT : " . strtoupper($kecamatan) . "</h3>";
 
@@ -100,7 +139,11 @@ class PelangganDuplikat extends BaseController
         $builder->join('m_jenis_pelanggan j', 'j.id_jenis = p.id_jenis');
         $builder->join('t_kecamatan k', 'k.id_kec = p.id_kec');
         $builder->join('t_kelurahan l', 'l.id_kelurahan = p.id_kelurahan');
-        $builder->where('k.id_kec', $unit);
+
+        if (! $this->semuaUnit($unit)) {
+            $builder->where('k.id_kec', (int) $unit);
+        }
+
         $builder->orderBy("p.$parameter", 'ASC');
 
         $subQuery = $this->db->table('m_pelanggan')

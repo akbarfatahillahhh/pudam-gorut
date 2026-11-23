@@ -6,7 +6,14 @@
     <table id="table" class="table table-sm table-bordered border-dark table-striped table-hover mb-0 w-100">
         <thead>
             <tr class="text-center text-black align-middle">
-                <td class="border-top border-dark py-1" rowspan="2">#</td>
+                <th class="border-top border-dark py-1" width="4%">#</th>
+                <th class="border-top border-dark py-1" width="12%">KODE BARANG</th>
+                <th class="border-top border-dark py-1">NAMA BARANG</th>
+                <th class="border-top border-dark py-1" width="8%">SATUAN</th>
+                <th class="border-top border-dark py-1" width="10%">STOK AWAL</th>
+                <th class="border-top border-dark py-1" width="8%">MASUK</th>
+                <th class="border-top border-dark py-1" width="8%">KELUAR</th>
+                <th class="border-top border-dark py-1" width="10%">STOK AKHIR</th>
             </tr>
         </thead>
         <tbody></tbody>
@@ -15,55 +22,52 @@
 
 <script>
     $(document).ready(function() {
-        var bulan = $('#bulan option:selected').text();
-        var tahun = $('#tahun option:selected').text();
-        $('#title-periode').text(bulan + ' ' + tahun);
-        // $('#table').DataTable({
-        //     processing: true,
-        //     serverSide: true,
-        //     ajax: {
-        //         type: "get",
-        //         url: "<?= base_url('Laporan/PelangganDuplikat/datatable') ?>",
-        //         data: function(data) {
-        //             data.parameter = $('#parameter').val();
-        //             data.unit = $('#unit').val();
-        //         }
-        //     },
-        //     columns: [{
-        //             data: null,
-        //             width: '5%',
-        //             searchable: false,
-        //             render: function(data, type, row, meta) {
-        //                 return meta.row + meta.settings._iDisplayStart + 1;
-        //             },
-        //             class: 'text-center text-black aling-middle py-1'
-        //         },
-        //         {
-        //             data: 'no_sambungan',
-        //             width: '12%',
-        //             searchable: false,
-        //             class: 'text-center text-black aling-middle fw-bolder py-1'
-        //         },
-        //         {
-        //             data: 'nama_pelanggan',
-        //             class: 'text-black aling-middle py-1',
-        //         },
-        //         {
-        //             data: 'kecamatan',
-        //             searchable: false,
-        //             class: 'text-black aling-middle py-1'
-        //         },
-        //         {
-        //             data: 'kelurahan',
-        //             searchable: false,
-        //             class: 'text-black aling-middle py-1'
-        //         },
-        //         {
-        //             data: 'jenis_pelanggan',
-        //             searchable: false,
-        //             class: 'text-center text-black aling-middle py-1'
-        //         }
-        //     ]
-        // });
+        let bulan = $('#bulan option:selected').val();
+        let tahun = $('#tahun option:selected').val();
+
+        $('#title-periode').text($('#bulan option:selected').text().trim() + ' ' + tahun);
+
+        $('#table').DataTable({
+            processing: true,
+            serverSide: true,
+            ajax: {
+                type: 'post',
+                url: "<?= base_url('Laporan/RekapPersediaan/datatable') ?>",
+                data: function(d) {
+                    d.bulan = $('#bulan').val();
+                    d.tahun = $('#tahun').val();
+                },
+            },
+            columns: [
+                {
+                    data: null,
+                    class: 'text-center align-middle py-1',
+                    searchable: false,
+                    orderable: false,
+                    render: function(data, type, row, meta) {
+                        return meta.row + meta.settings._iDisplayStart + 1;
+                    },
+                },
+                { data: 'barang_kode', class: 'align-middle py-1' },
+                { data: 'barang_nama', class: 'align-middle py-1 text-uppercase' },
+                { data: 'satuan', class: 'text-center align-middle py-1' },
+                { data: 'stok_awal', class: 'text-end align-middle py-1', searchable: false },
+                { data: 'masuk', class: 'text-end align-middle py-1 text-success', searchable: false },
+                { data: 'keluar', class: 'text-end align-middle py-1 text-danger', searchable: false },
+                { data: 'stok_akhir', class: 'text-end align-middle py-1 fw-semibold', searchable: false },
+            ],
+            order: [[2, 'asc']],
+            pageLength: 25,
+            language: {
+                emptyTable: 'Belum ada data barang.',
+                zeroRecords: 'Barang tidak ditemukan.',
+                processing: 'Memuat...',
+                search: 'Cari:',
+                lengthMenu: 'Tampil _MENU_ baris',
+                info: 'Menampilkan _START_ sampai _END_ dari _TOTAL_ barang',
+                infoEmpty: 'Tidak ada data',
+                paginate: { previous: 'Sebelumnya', next: 'Berikutnya' },
+            },
+        });
     });
 </script>

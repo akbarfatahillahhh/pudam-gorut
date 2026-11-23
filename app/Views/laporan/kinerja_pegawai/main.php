@@ -55,7 +55,7 @@
             serverSide: false,
             ajax: {
                 type: 'get',
-                url: "<?= base_url('laporan/kinerja-pegawai/data') ?>",
+                url: "<?= base_url('ekas/laporan/kinerja-pegawai/data') ?>",
                 data: function(data) {
                     data.tglAwal = $('#tglAwal').val();
                     data.tglAkhir = $('#tglAkhir').val();
@@ -109,7 +109,7 @@
     function lihatKegiatan(idPegawai) {
         $.ajax({
             type: 'get',
-            url: "<?= base_url('laporan/kinerja-pegawai/detail') ?>",
+            url: "<?= base_url('ekas/laporan/kinerja-pegawai/detail') ?>",
             data: {
                 id_pegawai: idPegawai,
                 tglAwal: $('#tglAwal').val(),
@@ -169,7 +169,7 @@
     }
 
     function cetakPdf(idPegawai) {
-        const url = "<?= base_url('laporan/kinerja-pegawai/pdf') ?>/" + idPegawai +
+        const url = "<?= base_url('ekas/laporan/kinerja-pegawai/pdf') ?>/" + idPegawai +
             '?tglAwal=' + $('#tglAwal').val() + '&tglAkhir=' + $('#tglAkhir').val();
         window.open(url, '_blank');
     }
